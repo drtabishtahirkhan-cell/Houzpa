@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HOUZPA · Who's party? Ma houz party.</title>
+<meta name="theme-color" content="#15112B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#15112B;--card:#1F1A3D;--line:#332C5E;--txt:#F4F1FF;--mut:#B9B2DA;--amber:#FFB547;--pink:#FF4F9A;--ok:#4ADE80;--warn:#FBBF24}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{max-width:460px;margin:0 auto;padding:20px 16px 110px;min-height:100vh}
+.center{display:flex;flex-direction:column;justify-content:center;gap:16px}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;letter-spacing:1px;line-height:1}
+.logo.sm{font-size:26px}
+.logo .h{color:var(--amber)}.logo .z{color:#fff}.logo .p{color:var(--pink)}
+.tag{color:var(--mut);font-size:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+label{font-size:13px;color:var(--mut);font-weight:500}
+input{width:100%;background:#120E26;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font:inherit;outline:none}
+input:focus{border-color:var(--amber)}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:12px;padding:13px 16px;font:600 15px Inter,sans-serif;cursor:pointer;min-height:46px}
+.btn:disabled{opacity:.6}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.msg{font-size:14px;color:var(--amber);min-height:20px}
+.err{color:#FF8A8A}
+.small{font-size:13px;color:var(--mut)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.banner{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#FDE68A;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:14px}
+h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:6px 0 10px}
+.party{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.party .cover{height:130px;background:linear-gradient(135deg,#3A2F6B,#15112B);display:flex;align-items:flex-end;padding:10px}
+.party .cover img{width:100%;height:100%;object-fit:cover}
+.party .body{padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.party h3{font-size:16px;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:3px 9px;color:var(--mut)}
+.chip.alc{border-color:var(--amber);color:var(--amber)}
+.price{font-weight:600;color:var(--amber)}
+.empty{text-align:center;color:var(--mut);padding:40px 12px}
+.sos{position:fixed;right:16px;bottom:20px;background:#E11D48;color:#fff;font-weight:700;text-decoration:none;border-radius:99px;padding:14px 20px;box-shadow:0 4px 18px rgba(225,29,72,.45)}
+</style>
+</head>
+<body>
+<div id="app"><main class="center"><div class="logo"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div><p class="tag">Loading…</p></main></div>
+<a class="sos" href="tel:112" aria-label="Emergency SOS, call 112">SOS</a>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// ====== YAHAN APNI SUPABASE DETAILS (Project Settings → API) ======
+const SUPABASE_URL = 'https://zgevzsifxvjizyfsljlx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_XLact9ZHEJ_rCJpOIQwLdg_1bdIjSgB';
+// =================================================================
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const app = document.getElementById('app');
+let session = null;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const logo = (cls = '') => `<div class="logo ${cls}"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div>`;
+
+function ageFrom(dob) {
+  const d = new Date(dob), t = new Date();
+  let a = t.getFullYear() - d.getFullYear();
+  const m = t.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--;
+  return a;
+}
+
+// ---------- 1. LOGIN ----------
+function viewLogin() {
+  app.innerHTML = `<main class="center">
+    ${logo()}
+    <p class="tag">Who's party? Ma houz party.</p>
+    <form id="f" class="card">
+      <label for="em">Apna email daalo</label>
+      <input id="em" type="email" required placeholder="aap@example.com" autocomplete="email">
+      <button class="btn" id="go" type="submit">Login link bhejo</button>
+      <p class="msg" id="msg"></p>
+    </form>
+    <p class="small">Sirf 18+ ke liye. Har host aur guest verified hote hain.</p>
+  </main>`;
+  document.getElementById('f').onsubmit = async e => {
+    e.preventDefault();
+    const btn = document.getElementById('go'), msg = document.getElementById('msg');
+    const email = document.getElementById('em').value.trim();
+    btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Bhej rahe hain…';
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    btn.disabled = false;
+    if (error) { msg.className = 'msg err'; msg.textContent = 'Error: ' + error.message; return; }
+    msg.textContent = 'Email check karo. Link pe tap karte hi aap andar aa jaoge.';
+  };
+}
+
+// ---------- 2. PROFILE (pehli baar) ----------
+function viewProfile() {
+  app.innerHTML = `<main class="center">
+    ${logo('sm')}
+    <h2>Apna profile banao</h2>
+    <form id="f" class="card">
+      <label for="nm">Poora naam</label>
+      <input id="nm" required minlength="2" placeholder="Jaise: Fahmeena Khan">
+      <label for="ct">Shehar</label>
+      <input id="ct" required value="Lucknow">
+      <label for="dob">Janam tithi</label>
+      <input id="dob" type="date" required>
+      <button class="btn" id="go" type="submit">Aage badho</button>
+      <p class="msg" id="msg"></p>
+    </form>
+  </main>`;
+  document.getElementById('f').onsubmit = async e => {
+    e.preventDefault();
+    const msg = document.getElementById('msg'), btn = document.getElementById('go');
+    const dob = document.getElementById('dob').value;
+    if (ageFrom(dob) < 18) { msg.className = 'msg err'; msg.textContent = 'HOUZPA sirf 18+ ke liye hai.'; return; }
+    btn.disabled = true;
+    const { error } = await sb.from('profiles').insert({
+      id: session.user.id,
+      full_name: document.getElementById('nm').value.trim(),
+      city: document.getElementById('ct').value.trim(),
+      date_of_birth: dob
+    });
+    btn.disabled = false;
+    if (error) { msg.className = 'msg err'; msg.textContent = 'Error: ' + error.message; return; }
+    route();
+  };
+}
+
+// ---------- 3. HOME FEED ----------
+async function viewHome(profile) {
+  const city = profile.city || 'Lucknow';
+  app.innerHTML = `<main>
+    <header>${logo('sm')}<button class="btn ghost" id="out" type="button">Logout</button></header>
+    ${profile.is_verified ? '' : '<div class="banner">Aapka ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte.</div>'}
+    <p class="small">Hi ${esc(profile.full_name.split(' ')[0])} 👋</p>
+    <h2>${esc(city)} mein aane wali parties</h2>
+    <div id="feed"><p class="empty">Parties dhoondh rahe hain…</p></div>
+  </main>`;
+  document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
+
+  const { data, error } = await sb.from('parties')
+    .select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,ticket_tiers(price_inr)')
+    .eq('city', city).eq('status', 'published').eq('visibility', 'public')
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at');
+  const feed = document.getElementById('feed');
+  if (error) { feed.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
+  if (!data.length) { feed.innerHTML = `<p class="empty">Abhi ${esc(city)} mein koi party listed nahi hai.<br>Jald aa rahi hain! 🎉</p>`; return; }
+
+  feed.innerHTML = data.map(p => {
+    const prices = (p.ticket_tiers || []).map(t => t.price_inr);
+    const from = prices.length ? '₹' + Math.min(...prices) : '';
+    const when = new Date(p.starts_at).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    const alc = p.alcohol && p.alcohol !== 'No alcohol';
+    return `<article class="party">
+      <div class="cover">${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="">` : ''}</div>
+      <div class="body">
+        <h3>${esc(p.name)}</h3>
+        <p class="small">${esc(p.area)} · ${esc(p.venue_type)}</p>
+        <div class="row"><span class="small">${esc(when)}</span><span class="price">${from ? 'From ' + from : ''}</span></div>
+        <div class="row">${alc ? '<span class="chip alc">Licensed · 21+</span>' : '<span class="chip">No alcohol</span>'}</div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+// ---------- ROUTER ----------
+async function route() {
+  if (!session) return viewLogin();
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+  if (error) { app.innerHTML = `<main class="center">${logo()}<p class="msg err">Error: ${esc(error.message)}</p></main>`; return; }
+  if (!profile) return viewProfile();
+  viewHome(profile);
+}
+
+sb.auth.onAuthStateChange((_event, s) => { session = s; setTimeout(route, 0); });
+</script>
+</body>
+</html>
