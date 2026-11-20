@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HOUZPA · Who's party? Ma houz party.</title>
+<title>ZASAZ · Z silent. Party loud.</title>
 <meta name="theme-color" content="#0A0A0C">
 <link rel="manifest" href="/manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HOUZPA">
+<meta name="apple-mobile-web-app-title" content="ZASAZ">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,6 +100,7 @@ textarea{min-height:80px;resize:vertical}
 #splash .sign .frame{fill:rgba(11,8,32,.55);stroke:var(--pink);stroke-width:5;filter:drop-shadow(0 0 10px rgba(255,79,154,.8))}
 #splash .sign text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:86px}
 #splash .sign .hou{fill:var(--amber);filter:drop-shadow(0 0 9px rgba(255,181,71,.75))}
+#splash .sign .asa{fill:var(--amber);filter:drop-shadow(0 0 10px rgba(242,196,109,.8))}
 #splash .sign .pa{fill:var(--pink);filter:drop-shadow(0 0 9px rgba(255,79,154,.85))}
 #splash .sign .zline{fill:rgba(255,255,255,.06);stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 12px rgba(255,255,255,.7))}
 @keyframes signIn{from{transform:scale(.35)}to{transform:scale(1)}}
@@ -253,28 +254,35 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
 @keyframes up{from{transform:translateY(100%)}}
 .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
 .steps{padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+
+/* ZASAZ: last Z is a mirror image */
+.logo .z,.brand .z{color:var(--pink)}
+.logo .zm{transform:scaleX(-1);animation:zbeatm 1.6s ease-in-out infinite}
+@keyframes zbeatm{0%,100%{transform:scaleX(-1)}10%{transform:scaleX(-1.18) scaleY(1.18) rotate(6deg);text-shadow:0 0 18px var(--pink)}}
+.brand .z{display:inline-block}.brand .zm{transform:scaleX(-1)}
+@media (prefers-reduced-motion:reduce){.logo .zm{transform:scaleX(-1)}}
 </style>
 </head>
 <body>
 <!-- PARTY MODE SPLASH: sound needs one tap (phone browsers block auto-play) -->
-<div id="splash" role="dialog" aria-label="HOUZPA party mode">
+<div id="splash" role="dialog" aria-label="ZASAZ party mode">
   <div class="beam b1"></div><div class="beam b2"></div><div class="beam b3"></div>
   <div class="big sign">
-    <svg viewBox="0 0 600 260" role="img" aria-label="HOUZPA">
+    <svg viewBox="0 0 600 260" role="img" aria-label="ZASAZ">
       <rect class="frame" x="12" y="12" width="576" height="236" rx="32"></rect>
-      <text class="hou" x="34" y="166">HOU</text>
-      <path id="zpath" class="zline" d=""></path>
-      <text class="pa" x="372" y="166">PA</text>
+      <path id="zpathL" class="zline" d=""></path>
+      <text class="asa" x="300" y="160" text-anchor="middle">ASA</text>
+      <path id="zpathR" class="zline" d=""></path>
     </svg>
   </div>
   <div id="onair">PARTY MODE ON</div>
-  <p class="sub">Who's party? Ma houz party.</p>
+  <p class="sub" id="ssub">ZASAZ · bolo <b>ASA</b></p>
   <button class="btn" id="goParty" type="button">🔊 Party mode ON karo</button>
   <button id="skip" type="button">Bina awaaz ke aage badho</button>
 </div>
 <div id="flash"></div>
 
-<div id="app"><main class="center"><div class="logo"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div><p class="tag">Loading…</p></main></div>
+<div id="app"><main class="center"><div class="logo"><span class="z">Z</span><span class="h">ASA</span><span class="z zm">Z</span></div><p class="tag">Loading…</p></main></div>
 
 <script>
 // ===== PARTY MODE: original stadium-style intro, made in code (no copyrighted music) =====
@@ -284,7 +292,8 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
   const BEATS = Array.from({length: 28}, (_, i) => i * BEAT);   // 28 dhoom-dhoom beats (~11.8s)
   const BUILD_START = 8.4;                                      // build-up starts while beats go on
   const DROPS = [13.6, 15.3, 17.0];                             // three drops
-  const END = 18.6;
+  const LIFT = 18.4;                                            // both Z float up, ASA stays
+  const END = 20.8;
   const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
   window.houzpaMuted = () => store.get('houzpa_muted') === '1';
   window.houzpaSetMuted = m => store.set('houzpa_muted', m ? '1' : '0');
@@ -403,47 +412,61 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
     confetti(at);
   }
 
-  // ----- the dancing Z: bar length follows the beat -----
-  const zp = document.getElementById('zpath');
+  // ----- two dancing Zs: left one normal, right one a MIRROR image -----
+  //   bars stretch OUTWARD on the beat (so they never cover ASA), both spin as mirror twins,
+  //   and after the last drop both Zs float up and away. Z silent, party loud: what stays is ASA.
+  const zL = document.getElementById('zpathL'), zR = document.getElementById('zpathR');
   let startT = null; const idle0 = performance.now();
-  function zPath(e){          // e = how far the bars stick out
-    const T=58, th=24, B=196, xl=250, xr=352, dx=34;
-    return `M${xl-e} ${T} H${xr} V${T+th} L${xl+dx} ${B-th} H${xr+e} V${B} H${xl} V${B-th} L${xr-dx} ${T+th} H${xl-e} Z`;
+  const T=62, th=22, B=192, W2=45, dx=30, CXL=132, CXR=468, CY=127, SPIN=.4;
+  function zPath(cx, e){      // a normal Z centred on cx; e = how far both bars stick out to the LEFT
+    const xl=cx-W2, xr=cx+W2;
+    return `M${xl-e} ${T} H${xr} V${T+th} L${xl+dx} ${B-th} H${xr} V${B} H${xl-e} V${B-th} H${xl} L${xr-dx} ${T+th} H${xl-e} Z`;
   }
-  // Z dance = two moves: bars stretch on the beat, and the whole Z spins
-  //   - every 4th beat: one quick full spin (bars pulled in while spinning)
-  //   - build-up: spins faster and faster, then lands upright exactly on the drop
-  //   - drops: bars shoot out longest
-  const CX = 301, CY = 127, SPIN = .4;
   const ease = x => x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
   function zState(now){
-    const base = 40;
-    if (startT === null) { const ph = ((now-idle0)/1000) % (BEAT*2); return { e: base + 70*Math.exp(-ph/.18), a: 0 }; }
+    const base = 12;
+    if (startT === null) { const ph = ((now-idle0)/1000) % (BEAT*2); return { e: base + 40*Math.exp(-ph/.18), a: 0, up: 0, op: 1 }; }
     const t = (now-startT)/1000, lastBeat = BEATS[BEATS.length-1], bs = lastBeat + BEAT;
+    if (t >= LIFT) {                                    // lift-off: rise, a little spin, fade away
+      const p = Math.min(1, (t-LIFT)/1.1);
+      return { e: 0, a: 200*ease(p), up: 300*ease(p), op: 1-p };
+    }
     if (t >= bs && t < DROPS[0]) {                      // build-up: accelerating spin
       const p = (t-bs)/(DROPS[0]-bs);
-      return { e: 10, a: 2160*p*p };
+      return { e: 8, a: 2160*p*p, up: 0, op: 1 };
     }
     for (let i=4; i<BEATS.length; i+=4) {               // quick spin on every 4th beat
       const b = BEATS[i];
-      if (t >= b && t < b+SPIN) return { e: 0, a: 360*ease((t-b)/SPIN) };
+      if (t >= b && t < b+SPIN) return { e: 0, a: 360*ease((t-b)/SPIN), up: 0, op: 1 };
     }
-    let ev = -9, amp = 120;
-    BEATS.forEach(b => { if (b <= t) { ev = b; amp = 120; } });
-    for (let d=DROPS[0]; d<=t && d<END; d+=.36) { ev = d; amp = 150; }
-    DROPS.forEach(d => { if (d <= t && t-d < .3) { ev = d; amp = 200; } });
+    let ev = -9, amp = 55;
+    BEATS.forEach(b => { if (b <= t) { ev = b; amp = 55; } });
+    for (let d=DROPS[0]; d<=t && d<LIFT; d+=.36) { ev = d; amp = 70; }
+    DROPS.forEach(d => { if (d <= t && t-d < .3) { ev = d; amp = 90; } });
     for (const d of DROPS.slice(0,2)) {                 // a spin between the drops too
-      const s0 = d + .95; if (t >= s0 && t < s0+SPIN) return { e: 0, a: -360*ease((t-s0)/SPIN) };
+      const s0 = d + .95; if (t >= s0 && t < s0+SPIN) return { e: 0, a: -360*ease((t-s0)/SPIN), up: 0, op: 1 };
     }
-    return { e: base + amp*Math.exp(-(t-ev)/.16), a: 0 };
+    return { e: base + amp*Math.exp(-(t-ev)/.16), a: 0, up: 0, op: 1 };
   }
   (function frame(now){
     if (!document.body.contains(splash)) return;
-    const z = zState(now);
-    zp.setAttribute('d', zPath(Math.max(0, z.e)));
-    zp.setAttribute('transform', `rotate(${(z.a % 360).toFixed(2)} ${CX} ${CY})`);
+    const z = zState(now), e = Math.max(0, z.e), a = (z.a % 360).toFixed(2);
+    zL.setAttribute('d', zPath(CXL, e));
+    zL.setAttribute('transform', `translate(0 ${-z.up}) rotate(${a} ${CXL} ${CY})`);
+    zR.setAttribute('d', zPath(CXR, e));                // same Z, flipped about its own centre = mirror twin
+    zR.setAttribute('transform', `translate(0 ${-z.up}) rotate(${-a} ${CXR} ${CY}) translate(${2*CXR} 0) scale(-1 1)`);
+    zL.style.opacity = zR.style.opacity = z.op;
     requestAnimationFrame(frame);
   })(performance.now());
+
+  function liftOff(){         // the Zs have left: only ASA stays
+    later(LIFT + .6, () => {
+      const oa = document.getElementById('onair'); oa.textContent = 'Z SILENT · PARTY LOUD'; oa.style.opacity = 1;
+      document.getElementById('ssub').innerHTML = 'Bolo <b>ASA</b>. 🤫🎉';
+      const big = splash.querySelector('.big');
+      if (big.animate) big.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}], {duration:700, easing:'ease-out'});
+    });
+  }
 
   function close(){
     timers.forEach(clearTimeout); timers = [];
@@ -460,6 +483,7 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
     document.getElementById('goParty').style.display = 'none';
     const sk = document.getElementById('skip'); sk.textContent = 'Skip ⏭'; sk.onclick = close;
     DROPS.forEach(dropHit);
+    liftOff();
     later(END, close);
   };
   document.getElementById('skip').onclick = () => { houzpaSetMuted(true); close(); };
@@ -480,7 +504,7 @@ const app = document.getElementById('app');
 let session = null;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const logo = (cls = '') => `<div class="logo ${cls}"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div>`;
+const logo = (cls = '') => `<div class="logo ${cls}" aria-label="ZASAZ"><span class="z">Z</span><span class="h">ASA</span><span class="z zm">Z</span></div>`;
 
 function ageFrom(dob) {
   const d = new Date(dob), t = new Date();
@@ -494,7 +518,7 @@ function ageFrom(dob) {
 function viewLogin() {
   app.innerHTML = `<main class="center">
     ${logo()}
-    <p class="tag">Who's party? Ma houz party.</p>
+    <p class="tag">Z silent. Party loud.</p>
     <form id="f" class="card">
       <label for="em">Apna email daalo</label>
       <input id="em" type="email" required placeholder="aap@example.com" autocomplete="email">
@@ -535,7 +559,7 @@ function viewProfile() {
     e.preventDefault();
     const msg = document.getElementById('msg'), btn = document.getElementById('go');
     const dob = document.getElementById('dob').value;
-    if (ageFrom(dob) < 18) { msg.className = 'msg err'; msg.textContent = 'HOUZPA sirf 18+ ke liye hai.'; return; }
+    if (ageFrom(dob) < 18) { msg.className = 'msg err'; msg.textContent = 'ZASAZ sirf 18+ ke liye hai.'; return; }
     btn.disabled = true;
     const { error } = await sb.from('profiles').insert({
       id: session.user.id,
@@ -558,7 +582,7 @@ const ICON = {
   user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>',
   pin: '<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>'
 };
-const brand = () => `<div class="brand"><img src="/icon-192.png" alt=""><span class="word"><b class="h">HOU</b><b class="z">Z</b><b class="p">PA</b></span></div>`;
+const brand = () => `<div class="brand"><img src="/icon-192.png" alt=""><span class="word" aria-label="ZASAZ"><b class="z">Z</b><b class="h">ASA</b><b class="z zm">Z</b></span></div>`;
 
 function frame(tab, profile, inner) {
   const t = (id, icon, label) => `<button class="tab ${tab === id ? 'on' : ''}" data-tab="${id}" type="button">${ICON[icon]}<span>${label}</span></button>`;
@@ -705,12 +729,12 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.
 async function installApp() {
   if (installEvt) { installEvt.prompt(); await installEvt.userChoice; installEvt = null; return; }
   if (isIOS()) {
-    sheet(`<h2>iPhone par HOUZPA install karo</h2>
+    sheet(`<h2>iPhone par ZASAZ install karo</h2>
       <ol class="steps"><li><b>Safari</b> mein houzpa.vercel.app kholo (Chrome mein nahi)</li>
       <li>Neeche <b>Share</b> button dabao (dabba jismein upar ki taraf teer hai ⬆️)</li>
       <li>Scroll karke <b>"Add to Home Screen"</b> dabao</li><li>Upar <b>Add</b> dabao. Ho gaya! 🎉</li></ol>`);
   } else {
-    sheet(`<h2>Android par HOUZPA install karo</h2>
+    sheet(`<h2>Android par ZASAZ install karo</h2>
       <ol class="steps"><li><b>Chrome</b> mein houzpa.vercel.app kholo</li>
       <li>Upar daayein <b>⋮</b> dabao</li><li><b>"Install app"</b> ya <b>"Add to Home screen"</b> dabao</li><li><b>Install</b> dabao. Ho gaya! 🎉</li></ol>`);
   }
@@ -799,7 +823,7 @@ async function checkout(profile, p, s, btn) {
   msg.textContent = '';
   const rz = new window.Razorpay({
     key: data.key_id, order_id: data.order_id, amount: data.amount, currency: 'INR',
-    name: 'HOUZPA', description: `${data.party_name} · ${data.tier_name} × ${s.qty}`, image: location.origin + '/icon-192.png',
+    name: 'ZASAZ', description: `${data.party_name} · ${data.tier_name} × ${s.qty}`, image: location.origin + '/icon-192.png',
     prefill: { name: data.name, email: data.email }, theme: { color: '#E5195E' },
     handler: async r => {
       msg.className = 'msg'; msg.textContent = 'Payment verify ho raha hai…';
@@ -835,7 +859,7 @@ async function drawPasses(box) {
   }).join('');
   try {
     const QR = (await import('https://esm.sh/qrcode@1.5.4')).default;
-    for (const el of box.querySelectorAll('.qr')) el.innerHTML = `<img alt="QR pass" src="${await QR.toDataURL('HOUZPA:' + el.dataset.code, { margin: 1, width: 220 })}">`;
+    for (const el of box.querySelectorAll('.qr')) el.innerHTML = `<img alt="QR pass" src="${await QR.toDataURL('ZASAZ:' + el.dataset.code, { margin: 1, width: 220 })}">`;
   } catch (e) { box.querySelectorAll('.qr').forEach(el => el.remove()); }
 }
 
@@ -854,13 +878,13 @@ function viewMe(profile) {
       </div>
     </section>
     <div class="list">
-      ${isStandalone() ? '' : '<button class="li" id="inst" type="button"><span>📲 HOUZPA app install karo</span><span>›</span></button>'}
+      ${isStandalone() ? '' : '<button class="li" id="inst" type="button"><span>📲 ZASAZ app install karo</span><span>›</span></button>'}
       <button class="li" id="snd" type="button"><span>🔊 Party sound sunao</span><span>›</span></button>
       <button class="li" id="mute" type="button"><span>${muted ? '🔇 Intro sound band hai' : '🔈 Intro sound on hai'}</span><span class="small">${muted ? 'On karo' : 'Band karo'}</span></button>
       <a class="li" href="tel:112"><span>🆘 Emergency: 112</span><span>›</span></a>
       <button class="li danger" id="out" type="button"><span>Logout</span><span>›</span></button>
     </div>
-    <p class="small center-t">HOUZPA · Who's party? Ma houz party.</p>`);
+    <p class="small center-t">ZASAZ · Z silent. Party loud.</p>`);
   bindNav(profile);
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
   document.getElementById('snd').onclick = () => window.houzpaPartySound && window.houzpaPartySound();
@@ -1017,7 +1041,7 @@ function viewCreate(profile) {
     const rs = n => '₹' + Math.round(n).toLocaleString('en-IN');
     const tq = totalPasses(), rec = capacity(s.cap).rec;
     $('earn').innerHTML = `<div class="kv"><span>Sab passes bike to (${tq})</span><b>${rs(gross)}</b></div>
-      <div class="kv"><span>HOUZPA commission (10%)</span><b>− ${rs(com)}</b></div>
+      <div class="kv"><span>ZASAZ commission (10%)</span><b>− ${rs(com)}</b></div>
       <div class="kv"><span>Payment gateway (~2.36%)</span><b>− ${rs(pg)}</b></div>
       <div class="kv"><span>Aapki kamai</span><b class="price" style="font-size:18px">${rs(net)}</b></div>
       ${tq > rec ? `<div class="banner" style="margin:6px 0 0">${tq} passes safe capacity (${rec}) se zyada hain. Passes kam karo.</div>` : ''}`;
