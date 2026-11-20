@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HOUZPA · Who's party? Ma houz party.</title>
-<meta name="theme-color" content="#15112B">
+<meta name="theme-color" content="#0A0A0C">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#15112B;--card:#1F1A3D;--line:#332C5E;--txt:#F4F1FF;--mut:#B9B2DA;--amber:#FFB547;--pink:#FF4F9A;--cyan:#3DE8FF;--ok:#4ADE80;--warn:#FBBF24}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -113,6 +113,108 @@ textarea{min-height:80px;resize:vertical}
 .confetti{position:fixed;top:-20px;width:9px;height:14px;z-index:55;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
 @media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.party{opacity:1}#onair{opacity:1}}
+/* ================= HOUZPA APP LOOK: onyx black + gold + magenta ================= */
+:root{--bg:#0A0A0C;--card:#141418;--card2:#1B1B21;--line:#2A2A31;--txt:#F7F3EA;--mut:#A39E93;
+  --amber:#F2C46D;--gold1:#F8DC9B;--gold2:#C8902E;--pink:#E5195E;--ok:#4ADE80;--warn:#F2C46D}
+body{background:var(--bg)}
+body::before{background:
+  radial-gradient(circle at 15% 10%,rgba(229,25,94,.16),transparent 35%),
+  radial-gradient(circle at 90% 30%,rgba(242,196,109,.12),transparent 38%)}
+.btn{background:linear-gradient(135deg,var(--pink),#FF4D7E);box-shadow:0 6px 20px rgba(229,25,94,.3)}
+.btn.gold,#goParty{background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#1A1206;box-shadow:0 6px 22px rgba(242,196,109,.3)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border-color:var(--line);border-radius:20px}
+.card h3{font-family:'Unbounded',sans-serif;font-size:14px;letter-spacing:.3px;color:var(--gold1)}
+input,select,textarea{background:#0F0F13;border-color:var(--line)}
+input:focus,select:focus,textarea:focus{border-color:var(--amber)}
+.pick.on{background:linear-gradient(135deg,var(--gold1),var(--gold2));border-color:transparent;color:#1A1206}
+.okbox{background:rgba(242,196,109,.08);border-color:rgba(242,196,109,.35);color:var(--gold1)}
+.banner{background:rgba(229,25,94,.1);border-color:rgba(229,25,94,.4);color:#FFC2D6;border-radius:14px}
+.logo .h{color:var(--amber)}.logo .p{color:var(--pink)}
+h2{font-family:'Unbounded',sans-serif;font-size:17px}
+
+/* shell */
+.shell{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(10,10,12,.78);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.05);max-width:520px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:9px}
+.brand img{width:34px;height:34px;border-radius:10px;box-shadow:0 0 14px rgba(242,196,109,.35)}
+.brand .word{font-family:'Unbounded',sans-serif;font-size:18px;letter-spacing:.5px}
+.brand .h{color:var(--amber)}.brand .z{color:#fff}.brand .p{color:var(--pink)}
+.sos-pill{background:#E11D48;color:#fff;font:800 12px 'Unbounded',sans-serif;letter-spacing:1px;text-decoration:none;border-radius:99px;padding:8px 13px;box-shadow:0 0 0 3px rgba(225,29,72,.2)}
+main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bottom));min-height:auto}
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:30;width:100%;max-width:520px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;
+  padding:8px 6px calc(10px + env(safe-area-inset-bottom));background:rgba(14,14,17,.92);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.06)}
+.tab{background:none;border:0;color:#7D786E;display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px Inter,sans-serif;cursor:pointer;padding:4px 0;min-height:48px;justify-content:center}
+.tab svg,.fab svg,.city svg,.me svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--amber)}
+.tab.on svg{filter:drop-shadow(0 0 6px rgba(242,196,109,.6))}
+.ghosttab{pointer-events:none}
+.fab{justify-self:center;width:60px;height:60px;margin-top:-30px;border-radius:20px;border:3px solid var(--bg);cursor:pointer;color:#1A1206;
+  background:linear-gradient(135deg,var(--gold1),var(--gold2));box-shadow:0 8px 24px rgba(242,196,109,.45);display:grid;place-items:center;transition:transform .15s}
+.fab svg{width:28px;height:28px;stroke-width:2.6}
+.fab:active{transform:scale(.9) rotate(90deg)}
+.fab.locked{filter:grayscale(.6) brightness(.7)}
+#toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:#F7F3EA;color:#111;padding:11px 16px;border-radius:14px;font:600 13px Inter,sans-serif;opacity:0;transition:.3s;z-index:70;width:max-content;max-width:90vw;text-align:center;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* home */
+.hero{padding:14px 2px 6px}
+.eyebrow{color:var(--mut);font-size:14px}
+.hero h1{font-family:'Unbounded',sans-serif;font-weight:800;font-size:32px;line-height:1.08;margin:6px 0 12px;letter-spacing:-.5px}
+.gold{background:linear-gradient(135deg,var(--gold1),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.city{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:7px 13px 7px 9px;font-size:13px;font-weight:600;margin-bottom:12px}
+.city svg{width:16px;height:16px;color:var(--pink)}
+.chiprow{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin:0 -16px;padding-left:16px;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.fchip{flex:none;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:99px;padding:9px 15px;font:600 13px Inter,sans-serif;cursor:pointer}
+.fchip.on{background:var(--txt);color:#0A0A0C;border-color:var(--txt)}
+.sec{display:flex;align-items:center;gap:8px;margin:14px 0 10px}
+.count{font:700 11px Inter,sans-serif;background:var(--card2);border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:2px 8px}
+.carousel{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:0 16px 6px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:14px;opacity:0;animation:rise .45s ease-out forwards;transition:transform .15s}
+.pcard:active{transform:scale(.98)}
+.pcard.big{flex:none;width:80%;scroll-snap-align:start;margin-bottom:0}
+.pcover{position:relative;height:190px;display:flex;align-items:flex-end}
+.pcard.big .pcover{height:250px}
+.emo{position:absolute;right:18px;top:40%;transform:translateY(-50%);font-size:64px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,5,7,.92))}
+.datebox{position:absolute;left:12px;top:12px;z-index:2;background:rgba(10,10,12,.7);backdrop-filter:blur(8px);border:1px solid rgba(242,196,109,.4);border-radius:12px;padding:5px 9px;text-align:center;line-height:1}
+.datebox b{display:block;font:800 18px 'Unbounded',sans-serif;color:var(--gold1)}
+.datebox span{font:700 9.5px Inter,sans-serif;letter-spacing:1px;color:var(--mut)}
+.hot{position:absolute;right:12px;top:12px;z-index:2;background:var(--pink);color:#fff;font:700 11px Inter,sans-serif;border-radius:99px;padding:5px 10px}
+.ptitle{position:relative;z-index:2;padding:14px}
+.ptitle h3{font:800 17px/1.2 'Unbounded',sans-serif;letter-spacing:-.2px}
+.ptitle p{color:#D9D3C7;font-size:13px;margin-top:4px}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font-size:13px;color:var(--mut)}
+.pfoot em{font-style:normal}.alc{color:var(--amber)}
+.from{color:var(--txt)}.from b{font:800 16px 'Unbounded',sans-serif;color:var(--gold1)}
+.skel{height:200px;border-radius:22px;margin-bottom:14px;background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.emptybox{text-align:center;background:linear-gradient(180deg,var(--card2),var(--card));border:1px dashed rgba(242,196,109,.35);border-radius:22px;padding:30px 20px;display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:6px}
+.emptybox .big{font-size:56px;animation:zbeat 1.6s ease-in-out infinite}
+.emptybox h3{font:800 16px 'Unbounded',sans-serif}
+
+/* old list cards (Meri parties) */
+.party{background:var(--card);border-color:var(--line);border-radius:20px}
+.st-published{background:rgba(74,222,128,.14);color:#BBF7D0}
+.st-pending_review{background:rgba(242,196,109,.15);color:var(--gold1)}
+
+/* profile */
+.me{text-align:center;padding:22px 0 10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.avatar{width:86px;height:86px;border-radius:28px;display:grid;place-items:center;font:800 30px 'Unbounded',sans-serif;color:#1A1206;background:linear-gradient(135deg,var(--gold1),var(--gold2));box-shadow:0 10px 30px rgba(242,196,109,.35);margin-bottom:6px}
+.me h1{font:800 22px 'Unbounded',sans-serif}
+.me .small svg{width:14px;height:14px;vertical-align:-2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.badge{font:700 11.5px Inter,sans-serif;border-radius:99px;padding:5px 11px;background:var(--card2);border:1px solid var(--line)}
+.badge.ok{color:#BBF7D0;border-color:rgba(74,222,128,.4)}.badge.warn{color:#FFC2D6;border-color:rgba(229,25,94,.4)}.badge.gold{color:var(--gold1);border-color:rgba(242,196,109,.5)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin:14px 0}
+.li{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);color:var(--txt);font:500 15px Inter,sans-serif;padding:16px;cursor:pointer;text-decoration:none;text-align:left}
+.li:last-child{border:0}.li.danger{color:#FF8A8A}
+.center-t{text-align:center}
+.pick{background:#0F0F13;border-color:var(--line)}
+.carousel{scroll-padding-left:16px}
+.carousel::after{content:"";flex:0 0 4px}
 </style>
 </head>
 <body>
@@ -135,7 +237,6 @@ textarea{min-height:80px;resize:vertical}
 <div id="flash"></div>
 
 <div id="app"><main class="center"><div class="logo"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div><p class="tag">Loading…</p></main></div>
-<a class="sos" href="tel:112" aria-label="Emergency SOS, call 112">SOS</a>
 
 <script>
 // ===== PARTY MODE: original stadium-style intro, made in code (no copyrighted music) =====
@@ -410,54 +511,154 @@ function viewProfile() {
   };
 }
 
-// ---------- 3. HOME FEED ----------
+// ---------- APP SHELL: top bar + neeche tab bar (asli app jaisa) ----------
+const ICON = {
+  home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
+  ticket: '<svg viewBox="0 0 24 24"><path d="M3 8.5V6h18v2.5a2.5 2.5 0 0 0 0 5V18H3v-4.5a2.5 2.5 0 0 0 0-5Z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  shield: '<svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>',
+  pin: '<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>'
+};
+const brand = () => `<div class="brand"><img src="/icon-192.png" alt=""><span class="word"><b class="h">HOU</b><b class="z">Z</b><b class="p">PA</b></span></div>`;
+
+function frame(tab, profile, inner) {
+  const t = (id, icon, label) => `<button class="tab ${tab === id ? 'on' : ''}" data-tab="${id}" type="button">${ICON[icon]}<span>${label}</span></button>`;
+  return `<div class="shell">
+    <div class="topbar">${brand()}<a class="sos-pill" href="tel:112" aria-label="Emergency SOS, call 112">SOS</a></div>
+    <main class="page">${inner}</main>
+    <nav class="tabbar" aria-label="App">
+      ${t('home', 'home', 'Home')}
+      ${t('mine', 'ticket', 'Meri parties')}
+      <button class="fab ${profile.is_verified ? '' : 'locked'}" data-tab="new" type="button" aria-label="Party banao">${ICON.plus}</button>
+      ${profile.is_admin ? t('admin', 'shield', 'Admin') : '<span class="tab ghosttab"></span>'}
+      ${t('me', 'user', 'Profile')}
+    </nav>
+  </div>`;
+}
+function bindNav(profile) {
+  app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
+    const go = b.dataset.tab;
+    if (navigator.vibrate) navigator.vibrate(8);
+    if (go === 'home') viewHome(profile);
+    else if (go === 'mine') viewMine(profile);
+    else if (go === 'admin') viewAdmin(profile);
+    else if (go === 'me') viewMe(profile);
+    else if (go === 'new') {
+      if (profile.is_verified) viewCreate(profile);
+      else toast('Party host karne ke liye pehle ID verification zaroori hai 🔒');
+    }
+  });
+}
+function toast(t) {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = t; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// Har venue ka apna rang aur emoji (jab tak host photo upload nahi karta)
+const COVER = {
+  Rooftop: ['#2B1055', '#E5195E', '🌃'], Apartment: ['#1B1B2F', '#F2C46D', '🏠'], Villa: ['#0F2027', '#2C5364', '🏡'],
+  Farmhouse: ['#3A1C00', '#E8862A', '🔥'], Garden: ['#0B3D2E', '#7BD389', '🌿'], 'Pool property': ['#003B5C', '#2EC4F1', '🏊'],
+  'Private lounge': ['#1A0B2E', '#B4458F', '🍸']
+};
+const cover = p => { const [a, b, e] = COVER[p.venue_type] || ['#1A1A1F', '#F2C46D', '🎉']; return { bg: `radial-gradient(circle at 80% 15%,${b}cc,transparent 55%),linear-gradient(160deg,${a},#0A0A0C)`, e }; };
+const dayBox = d => { const x = new Date(d); return `<div class="datebox"><b>${x.getDate()}</b><span>${x.toLocaleString('en-IN', { month: 'short' }).toUpperCase()}</span></div>`; };
+
+// ---------- 3. HOME ----------
 async function viewHome(profile) {
-  const city = profile.city || 'Lucknow';
-  app.innerHTML = `<main>
-    <header>${logo('sm')}<div class="hbtns">
-      <button class="icon-btn" id="snd" type="button" aria-label="Party sound">🎉</button>
-      <button class="btn ghost" id="out" type="button">Logout</button></div></header>
-    ${profile.is_verified ? '' : '<div class="banner">Aapka ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur party host nahi kar sakte.</div>'}
-    <div class="nav">
-      ${profile.is_verified ? '<button class="btn" id="new" type="button">＋ Party banao</button>' : ''}
-      <button class="btn ghost" id="mine" type="button">Meri parties</button>
-      ${profile.is_admin ? '<button class="btn ghost" id="adm" type="button">Admin</button>' : ''}
-    </div>
-    <p class="small">Hi ${esc(profile.full_name.split(' ')[0])} 👋</p>
-    <h2>${esc(city)} mein aane wali parties</h2>
-    <div id="feed"><p class="empty">Parties dhoondh rahe hain…</p></div>
-  </main>`;
-  document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
-  document.getElementById('snd').onclick = () => { if (!window.houzpaMuted()) window.houzpaPartySound(); };
-  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-  on('new', () => viewCreate(profile));
-  on('mine', () => viewMine(profile));
-  on('adm', () => viewAdmin(profile));
+  const city = profile.city || 'Lucknow', first = esc(profile.full_name.split(' ')[0]);
+  const hour = new Date().getHours(), hello = hour < 12 ? 'Good morning' : hour < 17 ? 'Hey' : 'Good evening';
+  const FILTERS = ['Sab', 'Aaj raat', 'Weekend', 'Rooftop', 'Pool', 'Live music', '₹800 se kam'];
+  app.innerHTML = frame('home', profile, `
+    <section class="hero">
+      <p class="eyebrow">${hello}, ${first} 👋</p>
+      <h1>Aaj raat<br><span class="gold">kahan party?</span></h1>
+      <div class="city">${ICON.pin}<span>${esc(city)}</span></div>
+    </section>
+    ${profile.is_verified ? '' : '<div class="banner">🔒 ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur host nahi kar sakte.</div>'}
+    <div class="chiprow" id="filters">${FILTERS.map((f, i) => `<button class="fchip ${i ? '' : 'on'}" type="button">${f}</button>`).join('')}</div>
+    <div id="feed"><div class="skel"></div><div class="skel"></div></div>`);
+  bindNav(profile);
 
   const { data, error } = await sb.from('parties')
-    .select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,ticket_tiers(price_inr)')
+    .select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,has_pool,music,safe_capacity,ticket_tiers(price_inr,quantity,sold)')
     .eq('city', city).eq('status', 'published').eq('visibility', 'public')
     .gte('starts_at', new Date().toISOString())
     .order('starts_at');
   const feed = document.getElementById('feed');
   if (error) { feed.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
-  if (!data.length) { feed.innerHTML = `<p class="empty">Abhi ${esc(city)} mein koi party listed nahi hai.<br>Jald aa rahi hain! 🎉</p>`; return; }
 
-  feed.innerHTML = data.map((p, i) => {
-    const prices = (p.ticket_tiers || []).map(t => t.price_inr);
-    const from = prices.length ? '₹' + Math.min(...prices) : '';
-    const when = new Date(p.starts_at).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
-    const alc = p.alcohol && p.alcohol !== 'No alcohol';
-    return `<article class="party" style="animation-delay:${i * 90}ms">
-      <div class="cover">${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="">` : ''}</div>
-      <div class="body">
-        <h3>${esc(p.name)}</h3>
-        <p class="small">${esc(p.area)} · ${esc(p.venue_type)}</p>
-        <div class="row"><span class="small">${esc(when)}</span><span class="price">${from ? 'From ' + from : ''}</span></div>
-        <div class="row">${alc ? '<span class="chip alc">Licensed · 21+</span>' : '<span class="chip">No alcohol</span>'}</div>
+  const draw = list => {
+    if (!list.length) {
+      feed.innerHTML = `<div class="emptybox"><div class="big">🪩</div><h3>${data.length ? 'Is filter mein koi party nahi' : `${esc(city)} mein abhi koi party nahi`}</h3>
+        <p class="small">${profile.is_verified ? 'Pehli party aap host karo aur shehar ko jagao!' : 'Jald aa rahi hain. Notification ke liye bane raho!'}</p>
+        ${profile.is_verified ? '<button class="btn gold" data-tab="new" type="button">＋ Party host karo</button>' : ''}</div>`;
+      bindNav(profile); return;
+    }
+    const card = (p, i, big) => {
+      const prices = (p.ticket_tiers || []).map(t => t.price_inr), left = (p.ticket_tiers || []).reduce((a, t) => a + t.quantity - t.sold, 0);
+      const c = cover(p), alc = p.alcohol && p.alcohol !== 'No alcohol';
+      const time = new Date(p.starts_at).toLocaleString('en-IN', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+      return `<article class="pcard ${big ? 'big' : ''}" style="animation-delay:${i * 80}ms">
+        <div class="pcover" style="background:${p.cover_url ? `url('${esc(p.cover_url)}') center/cover` : c.bg}">
+          ${p.cover_url ? '' : `<span class="emo">${c.e}</span>`}
+          ${dayBox(p.starts_at)}
+          ${left > 0 && left <= 10 ? `<span class="hot">🔥 ${left} passes bache</span>` : ''}
+          <div class="shade"></div>
+          <div class="ptitle"><h3>${esc(p.name)}</h3><p>${esc(p.area)} · ${esc(p.venue_type)}</p></div>
+        </div>
+        <div class="pfoot"><span>${esc(time)} · ${alc ? '<em class="alc">Licensed 21+</em>' : 'No alcohol'}</span>
+          <span class="from">${prices.length ? 'From <b>₹' + Math.min(...prices) + '</b>' : ''}</span></div>
+      </article>`;
+    };
+    const soon = list.filter(p => new Date(p.starts_at) - new Date() < 7 * 864e5);
+    feed.innerHTML = (soon.length ? `<h2 class="sec">🔥 Is hafte</h2><div class="carousel">${soon.map((p, i) => card(p, i, true)).join('')}</div>` : '')
+      + `<h2 class="sec">Sab parties <span class="count">${list.length}</span></h2>${list.map((p, i) => card(p, i)).join('')}`;
+  };
+  const test = {
+    'Sab': () => true,
+    'Aaj raat': p => new Date(p.starts_at).toDateString() === new Date().toDateString(),
+    'Weekend': p => [0, 5, 6].includes(new Date(p.starts_at).getDay()),
+    'Rooftop': p => p.venue_type === 'Rooftop',
+    'Pool': p => p.has_pool,
+    'Live music': p => (p.music || []).includes('Live music'),
+    '₹800 se kam': p => (p.ticket_tiers || []).some(t => t.price_inr < 800)
+  };
+  document.getElementById('filters').onclick = e => {
+    const b = e.target.closest('.fchip'); if (!b) return;
+    document.querySelectorAll('.fchip').forEach(x => x.classList.toggle('on', x === b));
+    draw(data.filter(test[b.textContent]));
+  };
+  draw(data);
+}
+
+// ---------- PROFILE TAB ----------
+function viewMe(profile) {
+  const initials = profile.full_name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const muted = window.houzpaMuted && window.houzpaMuted();
+  app.innerHTML = frame('me', profile, `
+    <section class="me">
+      <div class="avatar">${esc(initials)}</div>
+      <h1>${esc(profile.full_name)}</h1>
+      <p class="small">${ICON.pin} ${esc(profile.city || '')}</p>
+      <div class="badges">
+        ${profile.is_verified ? '<span class="badge ok">✓ ID verified</span>' : '<span class="badge warn">ID verification baaki</span>'}
+        ${profile.is_host ? '<span class="badge">Host</span>' : ''}${profile.is_admin ? '<span class="badge gold">Admin</span>' : ''}
       </div>
-    </article>`;
-  }).join('');
+    </section>
+    <div class="list">
+      <button class="li" id="snd" type="button"><span>🔊 Party sound sunao</span><span>›</span></button>
+      <button class="li" id="mute" type="button"><span>${muted ? '🔇 Intro sound band hai' : '🔈 Intro sound on hai'}</span><span class="small">${muted ? 'On karo' : 'Band karo'}</span></button>
+      <a class="li" href="tel:112"><span>🆘 Emergency: 112</span><span>›</span></a>
+      <button class="li danger" id="out" type="button"><span>Logout</span><span>›</span></button>
+    </div>
+    <p class="small center-t">HOUZPA · Who's party? Ma houz party.</p>`);
+  bindNav(profile);
+  document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
+  document.getElementById('snd').onclick = () => window.houzpaPartySound && window.houzpaPartySound();
+  document.getElementById('mute').onclick = () => { window.houzpaSetMuted(!muted); viewMe(profile); };
 }
 
 // ---------- 4. PARTY BANAO (host) ----------
@@ -488,8 +689,7 @@ function viewCreate(profile) {
     `<button type="button" class="pick ${(single ? s[key] === o : s[key].includes(o)) ? 'on' : ''}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
   const num = (k, lbl) => `<div><label for="c_${k}">${lbl}</label><input id="c_${k}" type="number" min="0" value="${s.cap[k]}" inputmode="numeric"></div>`;
 
-  app.innerHTML = `<main>
-    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+  app.innerHTML = frame('new', profile, `
     <h2>Party banao 🎉</h2>
     <form id="f" style="display:flex;flex-direction:column;gap:14px">
       <section class="card">
@@ -557,10 +757,10 @@ function viewCreate(profile) {
         <p class="msg" id="msg"></p>
       </section>
     </form>
-  </main>`;
+  `);
+  bindNav(profile);
 
   const $ = id => document.getElementById(id);
-  $('back').onclick = () => viewHome(profile);
 
   // chips
   app.querySelectorAll('.chips[data-key]').forEach(box => {
@@ -659,12 +859,11 @@ const STATUS = { draft: 'Draft', pending_review: 'Approval baaki', published: 'L
 const when = d => new Date(d).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
 async function viewMine(profile, note = '') {
-  app.innerHTML = `<main>
-    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+  app.innerHTML = frame('mine', profile, `
     ${note ? `<div class="okbox" style="margin-bottom:14px">${esc(note)}</div>` : ''}
     <h2>Meri parties</h2><div id="list"><p class="empty">Load ho raha hai…</p></div>
-  </main>`;
-  document.getElementById('back').onclick = () => viewHome(profile);
+  `);
+  bindNav(profile);
   const { data, error } = await sb.from('parties')
     .select('id,name,area,city,starts_at,status,safe_capacity,ticket_tiers(name,price_inr,quantity,sold)')
     .eq('host_id', session.user.id).order('starts_at', { ascending: false });
@@ -684,11 +883,10 @@ async function viewMine(profile, note = '') {
 // ---------- 6. ADMIN: parties approve karo ----------
 async function viewAdmin(profile) {
   if (!profile.is_admin) return viewHome(profile);
-  app.innerHTML = `<main>
-    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+  app.innerHTML = frame('admin', profile, `
     <h2>Admin · Approval ke liye parties</h2><p class="msg" id="msg"></p><div id="list"><p class="empty">Load ho raha hai…</p></div>
-  </main>`;
-  document.getElementById('back').onclick = () => viewHome(profile);
+  `);
+  bindNav(profile);
   const { data, error } = await sb.from('parties')
     .select('id,name,description,area,city,venue_type,starts_at,ends_at,min_age,safe_capacity,music,food,house_rules,visibility,host:profiles!parties_host_id_fkey(full_name,is_verified),ticket_tiers(name,price_inr,quantity),party_private(exact_address,host_phone)')
     .eq('status', 'pending_review').order('starts_at');
