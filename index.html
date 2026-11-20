@@ -40,6 +40,26 @@ h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:6px 0 10px}
 .chip.alc{border-color:var(--amber);color:var(--amber)}
 .price{font-weight:600;color:var(--amber)}
 .empty{text-align:center;color:var(--mut);padding:40px 12px}
+select,textarea{width:100%;background:#120E26;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font:inherit;outline:none}
+textarea{min-height:80px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.pick{background:#120E26;border:1px solid var(--line);color:var(--txt);border-radius:99px;padding:8px 12px;font:500 13px Inter,sans-serif;cursor:pointer}
+.pick.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.pick:disabled{opacity:.45}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv:last-child{border:0}
+.okbox{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.4);color:#BBF7D0;border-radius:12px;padding:10px 12px;font-size:14px}
+.tier{display:grid;grid-template-columns:1.4fr 1fr .8fr auto;gap:6px;align-items:center}
+.x{background:none;border:0;color:#FF8A8A;font-size:20px;cursor:pointer;padding:0 6px}
+.nav{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.nav .btn{flex:1;padding:10px;min-height:40px;font-size:14px}
+.status{font-size:12px;border-radius:99px;padding:3px 9px;font-weight:600}
+.st-pending_review{background:rgba(251,191,36,.15);color:#FDE68A}
+.st-published{background:rgba(74,222,128,.15);color:#BBF7D0}
+.st-cancelled,.st-draft{background:rgba(255,138,138,.12);color:#FFB4B4}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--mut)}
+.check input{width:auto;margin-top:3px}
 .sos{position:fixed;right:16px;bottom:20px;background:#E11D48;color:#fff;font-weight:700;text-decoration:none;border-radius:99px;padding:14px 20px;box-shadow:0 4px 18px rgba(225,29,72,.45)}
 </style>
 </head>
@@ -134,12 +154,21 @@ async function viewHome(profile) {
   const city = profile.city || 'Lucknow';
   app.innerHTML = `<main>
     <header>${logo('sm')}<button class="btn ghost" id="out" type="button">Logout</button></header>
-    ${profile.is_verified ? '' : '<div class="banner">Aapka ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte.</div>'}
+    ${profile.is_verified ? '' : '<div class="banner">Aapka ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur party host nahi kar sakte.</div>'}
+    <div class="nav">
+      ${profile.is_verified ? '<button class="btn" id="new" type="button">＋ Party banao</button>' : ''}
+      <button class="btn ghost" id="mine" type="button">Meri parties</button>
+      ${profile.is_admin ? '<button class="btn ghost" id="adm" type="button">Admin</button>' : ''}
+    </div>
     <p class="small">Hi ${esc(profile.full_name.split(' ')[0])} 👋</p>
     <h2>${esc(city)} mein aane wali parties</h2>
     <div id="feed"><p class="empty">Parties dhoondh rahe hain…</p></div>
   </main>`;
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on('new', () => viewCreate(profile));
+  on('mine', () => viewMine(profile));
+  on('adm', () => viewAdmin(profile));
 
   const { data, error } = await sb.from('parties')
     .select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,ticket_tiers(price_inr)')
@@ -165,6 +194,268 @@ async function viewHome(profile) {
       </div>
     </article>`;
   }).join('');
+}
+
+// ---------- 4. PARTY BANAO (host) ----------
+const VENUES = ['Rooftop', 'Apartment', 'Villa', 'Farmhouse', 'Garden', 'Pool property', 'Private lounge'];
+const MUSIC = ['DJ', 'Live music', 'Bollywood', 'Punjabi', 'EDM', 'Sufi', 'Karaoke', 'Board games', 'Bonfire', 'Movie night'];
+const FOOD = ['Veg', 'Non-veg', 'Snacks', 'Buffet', 'Barbecue', 'Desserts', 'Mocktails', 'Soft drinks'];
+const RULES = ['No smoking indoors', 'Photos sirf consent se', 'Smart casual', 'No outside food', 'Pets on premises', 'ID check at gate', 'Society NOC le liya hai'];
+
+// Safe capacity: sabse chhoti limit jeetegi. Kabhi bhi legal/fire limit se upar nahi.
+function capacity(c) {
+  const space = Math.floor(c.indoor / 15 + c.outdoor / 12);   // aaraam se khade hone ki jagah
+  const wash = c.wash * 25;                                      // ~25 guests per washroom
+  const exits = c.exits >= 2 ? Infinity : 50;                    // ek hi exit = chhoti party
+  const park = Math.floor(c.cars * 2.5 + c.bikes * 1.5) + (c.transit ? Math.round(space * 0.4) : 0);
+  const lims = [['Jagah (sq ft)', space], ['Washrooms', wash], ['Emergency exits', exits], ['Parking aur transport', park]];
+  const min = lims.reduce((a, b) => (b[1] < a[1] ? b : a));
+  return { lims, rec: Math.max(0, min[1] === Infinity ? 0 : min[1]), by: min[0] };
+}
+
+function viewCreate(profile) {
+  const s = {
+    venue: 'Rooftop', music: ['DJ'], food: ['Veg', 'Snacks'], rules: ['No smoking indoors', 'Photos sirf consent se'],
+    vis: 'public', tiers: [{ name: 'Standard', price: 799, qty: 20 }],
+    cap: { indoor: 600, outdoor: 1200, wash: 2, exits: 1, cars: 5, bikes: 8, transit: true }
+  };
+  const today = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  const picks = (key, opts, single) => `<div class="chips" data-key="${key}" data-single="${single ? 1 : ''}">${opts.map(o =>
+    `<button type="button" class="pick ${(single ? s[key] === o : s[key].includes(o)) ? 'on' : ''}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  const num = (k, lbl) => `<div><label for="c_${k}">${lbl}</label><input id="c_${k}" type="number" min="0" value="${s.cap[k]}" inputmode="numeric"></div>`;
+
+  app.innerHTML = `<main>
+    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+    <h2>Party banao 🎉</h2>
+    <form id="f" style="display:flex;flex-direction:column;gap:14px">
+      <section class="card">
+        <h3>1 · Party ki basic baatein</h3>
+        <label for="nm">Party ka naam</label><input id="nm" required minlength="3" maxlength="80" placeholder="Jaise: Neon Rooftop Bollywood Night">
+        <label for="ds">Description</label><textarea id="ds" maxlength="800" placeholder="Party mein kya khaas hai?"></textarea>
+        <div class="grid2">
+          <div><label for="ct">Shehar</label><input id="ct" required value="${esc(profile.city || 'Lucknow')}"></div>
+          <div><label for="ar">Area (sabko dikhega)</label><input id="ar" required placeholder="Gomti Nagar"></div>
+        </div>
+        <div class="grid2">
+          <div><label for="dt">Date</label><input id="dt" type="date" required min="${today}" value="${today}"></div>
+          <div><label for="ag">Min age</label><select id="ag"><option>18</option><option>21</option><option>25</option></select></div>
+        </div>
+        <div class="grid2">
+          <div><label for="st">Shuru</label><input id="st" type="time" required value="19:00"></div>
+          <div><label for="en">Khatam</label><input id="en" type="time" required value="23:00"></div>
+        </div>
+        <label>Kaun dekh sakta hai</label>
+        ${picks('vis', ['public', 'private', 'secret'], true)}
+      </section>
+
+      <section class="card">
+        <h3>2 · Venue aur parking</h3>
+        <label>Venue type</label>${picks('venue', VENUES, true)}
+        <div class="grid2">${num('indoor', 'Indoor area (sq ft)')}${num('outdoor', 'Outdoor area (sq ft)')}${num('wash', 'Washrooms')}${num('exits', 'Exits / seedhiyan')}${num('cars', 'Car parking')}${num('bikes', '2-wheeler parking')}</div>
+        <label class="check"><input id="c_transit" type="checkbox" ${s.cap.transit ? 'checked' : ''}> Cab drop-off ya metro paas mein hai</label>
+        <div id="capbox"></div>
+      </section>
+
+      <section class="card">
+        <h3>3 · Khana, music aur rules</h3>
+        <label>Khana aur drinks</label>${picks('food', FOOD)}
+        <label>Music aur entertainment</label>${picks('music', MUSIC)}
+        <label for="vol">Music volume rule</label>
+        <select id="vol"><option>Low / acoustic</option><option selected>Moderate (raat 10 baje tak)</option><option>Loud (sirf licensed venue)</option></select>
+        <label>Alcohol</label>
+        <div class="chips"><button type="button" class="pick on">No alcohol</button><button type="button" class="pick" disabled>Licensed bar (licence upload jald aa raha hai)</button></div>
+        <label>House rules</label>${picks('rules', RULES)}
+      </section>
+
+      <section class="card">
+        <h3>4 · Passes aur kamai</h3>
+        <p class="small">Naam · Price ₹ · Kitne passes</p>
+        <div id="tiers" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div class="chips">
+          <button type="button" class="pick" data-add="VIP|1999|5">+ VIP</button>
+          <button type="button" class="pick" data-add="Couple|1399|5">+ Couple</button>
+          <button type="button" class="pick" data-add="Early-bird|599|10">+ Early-bird</button>
+        </div>
+        <div id="earn"></div>
+      </section>
+
+      <section class="card">
+        <h3>5 · Exact address (private) 🔒</h3>
+        <p class="small">Ye sirf un guests ko dikhega jinki payment confirm ho chuki hai.</p>
+        <label for="ad">Poora address</label><textarea id="ad" required minlength="10" placeholder="Makaan no., gali, landmark"></textarea>
+        <label for="ei">Entry instructions</label><input id="ei" placeholder="Jaise: Gate 2, lift se 5th floor">
+        <label for="ph">Aapka phone (guests ke liye)</label><input id="ph" type="tel" required pattern="[0-9+ ]{10,15}" placeholder="98xxxxxxxx">
+      </section>
+
+      <section class="card">
+        <label class="check"><input id="decl" type="checkbox" required> Main confirm karti/karta hoon ki ye property meri hai ya mujhe use karne ki permission hai, aur party local noise, society aur alcohol rules follow karegi. Party ko legally chalana meri zimmedari hai.</label>
+        <button class="btn" id="go" type="submit">Approval ke liye bhejo 🚀</button>
+        <p class="msg" id="msg"></p>
+      </section>
+    </form>
+  </main>`;
+
+  const $ = id => document.getElementById(id);
+  $('back').onclick = () => viewHome(profile);
+
+  // chips
+  app.querySelectorAll('.chips[data-key]').forEach(box => {
+    box.onclick = e => {
+      const b = e.target.closest('.pick'); if (!b) return;
+      const key = box.dataset.key, v = b.dataset.v;
+      if (box.dataset.single) { s[key] = v; box.querySelectorAll('.pick').forEach(x => x.classList.toggle('on', x === b)); }
+      else { const i = s[key].indexOf(v); i > -1 ? s[key].splice(i, 1) : s[key].push(v); b.classList.toggle('on'); }
+    };
+  });
+
+  // capacity
+  const totalPasses = () => s.tiers.reduce((a, t) => a + (t.qty || 0), 0);
+  function drawCap() {
+    const c = capacity(s.cap);
+    $('capbox').innerHTML = `<div style="margin-top:4px">${c.lims.map(([n, v]) =>
+      `<div class="kv"><span>${n}</span><b style="color:${n === c.by ? 'var(--warn)' : 'inherit'}">${v === Infinity ? 'Koi limit nahi' : v + ' guests'}</b></div>`).join('')}</div>
+      <div class="okbox">Safe max: <b style="font-size:18px">${c.rec} guests</b><br>Limit ki wajah: <b>${c.by}</b>${c.by === 'Parking aur transport' ? `. ${s.cap.cars} car spaces itne guests ke liye kaafi nahi. Cab drop-off on karo.` : ''}</div>
+      <p class="small">Ye sirf guidance hai. Legal occupancy aur fire-safety limit hamesha upar hai.</p>`;
+    drawEarn();
+  }
+  ['indoor', 'outdoor', 'wash', 'exits', 'cars', 'bikes'].forEach(k => { $('c_' + k).oninput = e => { s.cap[k] = Math.max(0, +e.target.value || 0); drawCap(); }; });
+  $('c_transit').onchange = e => { s.cap.transit = e.target.checked; drawCap(); };
+
+  // tiers + earnings
+  function drawTiers() {
+    $('tiers').innerHTML = s.tiers.map((t, i) => `<div class="tier">
+      <input data-i="${i}" data-f="name" value="${esc(t.name)}" maxlength="30" aria-label="Pass ka naam">
+      <input data-i="${i}" data-f="price" type="number" min="0" value="${t.price}" inputmode="numeric" aria-label="Price">
+      <input data-i="${i}" data-f="qty" type="number" min="1" value="${t.qty}" inputmode="numeric" aria-label="Passes">
+      ${s.tiers.length > 1 ? `<button type="button" class="x" data-del="${i}" aria-label="Hatao">×</button>` : '<span></span>'}
+    </div>`).join('');
+    drawEarn();
+  }
+  $('tiers').oninput = e => {
+    const el = e.target, t = s.tiers[el.dataset.i]; if (!t) return;
+    t[el.dataset.f] = el.dataset.f === 'name' ? el.value : Math.max(0, +el.value || 0);
+    drawEarn();
+  };
+  $('tiers').onclick = e => { const d = e.target.dataset.del; if (d !== undefined) { s.tiers.splice(+d, 1); drawTiers(); } };
+  app.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
+    const [name, price, qty] = b.dataset.add.split('|'); s.tiers.push({ name, price: +price, qty: +qty }); drawTiers();
+  });
+  function drawEarn() {
+    const gross = s.tiers.reduce((a, t) => a + t.price * t.qty, 0);
+    const com = gross * 0.10, pg = gross * 0.0236, net = gross - com - pg;
+    const rs = n => '₹' + Math.round(n).toLocaleString('en-IN');
+    const tq = totalPasses(), rec = capacity(s.cap).rec;
+    $('earn').innerHTML = `<div class="kv"><span>Sab passes bike to (${tq})</span><b>${rs(gross)}</b></div>
+      <div class="kv"><span>HOUZPA commission (10%)</span><b>− ${rs(com)}</b></div>
+      <div class="kv"><span>Payment gateway (~2.36%)</span><b>− ${rs(pg)}</b></div>
+      <div class="kv"><span>Aapki kamai</span><b class="price" style="font-size:18px">${rs(net)}</b></div>
+      ${tq > rec ? `<div class="banner" style="margin:6px 0 0">${tq} passes safe capacity (${rec}) se zyada hain. Passes kam karo.</div>` : ''}`;
+  }
+
+  // submit
+  $('f').onsubmit = async e => {
+    e.preventDefault();
+    const msg = $('msg'), btn = $('go');
+    const fail = t => { msg.className = 'msg err'; msg.textContent = t; btn.disabled = false; };
+    const c = capacity(s.cap), tq = totalPasses();
+    if (!s.tiers.length || s.tiers.some(t => !t.name.trim() || t.qty < 1)) return fail('Har pass ka naam aur kam se kam 1 pass zaroori hai.');
+    if (c.rec < 1) return fail('Venue details se safe capacity 0 aa rahi hai. Area aur washrooms check karo.');
+    if (tq > c.rec) return fail(`Passes (${tq}) safe capacity (${c.rec}) se zyada hain.`);
+    const date = $('dt').value, start = new Date(`${date}T${$('st').value}`);
+    let end = new Date(`${date}T${$('en').value}`);
+    if (end <= start) end = new Date(end.getTime() + 864e5);          // raat 12 ke baad khatam
+    if (start <= new Date()) return fail('Party ka time future mein hona chahiye.');
+
+    btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Bhej rahe hain…';
+    const { data: party, error } = await sb.from('parties').insert({
+      host_id: session.user.id, name: $('nm').value.trim(), description: $('ds').value.trim() || null,
+      city: $('ct').value.trim(), area: $('ar').value.trim(), venue_type: s.venue,
+      starts_at: start.toISOString(), ends_at: end.toISOString(), min_age: +$('ag').value,
+      safe_capacity: c.rec, music: s.music, food: s.food, alcohol: 'No alcohol', volume_rule: $('vol').value,
+      house_rules: s.rules, parking_cars: s.cap.cars, parking_bikes: s.cap.bikes, has_pool: s.venue === 'Pool property',
+      visibility: s.vis, status: 'pending_review', host_declared_lawful: true
+    }).select('id').single();
+    if (error) return fail('Error: ' + error.message);
+
+    const r1 = await sb.from('ticket_tiers').insert(s.tiers.map(t => ({ party_id: party.id, name: t.name.trim(), price_inr: t.price, quantity: t.qty })));
+    const r2 = await sb.from('party_private').insert({ party_id: party.id, exact_address: $('ad').value.trim(), entry_instructions: $('ei').value.trim() || null, host_phone: $('ph').value.trim() });
+    if (r1.error || r2.error) {
+      await sb.from('parties').update({ status: 'draft' }).eq('id', party.id);   // adhoori party approval mein na jaye
+      return fail('Party save hui par passes/address mein error: ' + (r1.error || r2.error).message + '. Meri parties mein draft bani hai.');
+    }
+    if (!profile.is_host) await sb.from('profiles').update({ is_host: true }).eq('id', session.user.id);
+    viewMine(profile, 'Party approval ke liye chali gayi! 🎉 Admin approve karte hi sabko dikhegi.');
+  };
+
+  drawCap(); drawTiers();
+}
+
+// ---------- 5. MERI PARTIES (host) ----------
+const STATUS = { draft: 'Draft', pending_review: 'Approval baaki', published: 'Live ✓', cancelled: 'Rejected / cancelled', completed: 'Ho gayi' };
+const when = d => new Date(d).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+
+async function viewMine(profile, note = '') {
+  app.innerHTML = `<main>
+    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+    ${note ? `<div class="okbox" style="margin-bottom:14px">${esc(note)}</div>` : ''}
+    <h2>Meri parties</h2><div id="list"><p class="empty">Load ho raha hai…</p></div>
+  </main>`;
+  document.getElementById('back').onclick = () => viewHome(profile);
+  const { data, error } = await sb.from('parties')
+    .select('id,name,area,city,starts_at,status,safe_capacity,ticket_tiers(name,price_inr,quantity,sold)')
+    .eq('host_id', session.user.id).order('starts_at', { ascending: false });
+  const list = document.getElementById('list');
+  if (error) { list.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
+  if (!data.length) { list.innerHTML = `<p class="empty">Abhi aapne koi party nahi banayi.${profile.is_verified ? '' : '<br>Party banane ke liye ID verification zaroori hai.'}</p>`; return; }
+  list.innerHTML = data.map(p => {
+    const sold = p.ticket_tiers.reduce((a, t) => a + t.sold, 0), total = p.ticket_tiers.reduce((a, t) => a + t.quantity, 0);
+    return `<article class="party"><div class="body">
+      <div class="row"><h3>${esc(p.name)}</h3><span class="status st-${p.status}">${STATUS[p.status] || p.status}</span></div>
+      <p class="small">${esc(p.area)}, ${esc(p.city)} · ${esc(when(p.starts_at))}</p>
+      <p class="small">Passes: ${sold} / ${total} bike · Safe max ${p.safe_capacity}</p>
+    </div></article>`;
+  }).join('');
+}
+
+// ---------- 6. ADMIN: parties approve karo ----------
+async function viewAdmin(profile) {
+  if (!profile.is_admin) return viewHome(profile);
+  app.innerHTML = `<main>
+    <header>${logo('sm')}<button class="btn ghost" id="back" type="button">← Wapas</button></header>
+    <h2>Admin · Approval ke liye parties</h2><p class="msg" id="msg"></p><div id="list"><p class="empty">Load ho raha hai…</p></div>
+  </main>`;
+  document.getElementById('back').onclick = () => viewHome(profile);
+  const { data, error } = await sb.from('parties')
+    .select('id,name,description,area,city,venue_type,starts_at,ends_at,min_age,safe_capacity,music,food,house_rules,visibility,host:profiles!parties_host_id_fkey(full_name,is_verified),ticket_tiers(name,price_inr,quantity),party_private(exact_address,host_phone)')
+    .eq('status', 'pending_review').order('starts_at');
+  const list = document.getElementById('list');
+  if (error) { list.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
+  if (!data.length) { list.innerHTML = '<p class="empty">Koi party approval ke liye pending nahi hai. ✅</p>'; return; }
+  list.innerHTML = data.map(p => {
+    const priv = Array.isArray(p.party_private) ? p.party_private[0] : p.party_private;
+    return `<article class="card" style="margin-bottom:12px">
+      <h3>${esc(p.name)}</h3>
+      <p class="small">Host: ${esc(p.host?.full_name)} ${p.host?.is_verified ? '✓ verified' : '⚠ unverified'} · ${esc(p.visibility)}</p>
+      <p class="small">${esc(when(p.starts_at))} – ${esc(new Date(p.ends_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }))} · ${esc(p.venue_type)} · ${p.min_age}+</p>
+      ${p.description ? `<p style="font-size:14px">${esc(p.description)}</p>` : ''}
+      <div class="kv"><span>Safe capacity</span><b>${p.safe_capacity}</b></div>
+      <div class="kv"><span>Passes</span><b>${p.ticket_tiers.map(t => `${esc(t.name)} ₹${t.price_inr}×${t.quantity}`).join(', ')}</b></div>
+      <div class="kv"><span>Music / food</span><b>${esc([...p.music, ...p.food].join(', '))}</b></div>
+      <div class="kv"><span>Rules</span><b>${esc(p.house_rules.join(', '))}</b></div>
+      <div class="kv"><span>Address 🔒</span><b>${esc(priv?.exact_address || '—')}, ${esc(p.area)}, ${esc(p.city)}</b></div>
+      <div class="kv"><span>Host phone</span><b>${esc(priv?.host_phone || '—')}</b></div>
+      <div class="grid2"><button class="btn" data-pub="${p.id}" type="button">Approve ✓</button><button class="btn ghost" data-rej="${p.id}" type="button">Reject</button></div>
+    </article>`;
+  }).join('');
+  list.onclick = async e => {
+    const id = e.target.dataset.pub || e.target.dataset.rej; if (!id) return;
+    e.target.disabled = true;
+    const { error } = await sb.from('parties').update({ status: e.target.dataset.pub ? 'published' : 'cancelled' }).eq('id', id);
+    const msg = document.getElementById('msg');
+    if (error) { msg.className = 'msg err'; msg.textContent = 'Error: ' + error.message; e.target.disabled = false; return; }
+    msg.className = 'msg'; msg.textContent = e.target.dataset.pub ? 'Party live ho gayi! 🎉' : 'Party reject kar di.';
+    e.target.closest('article').remove();
+  };
 }
 
 // ---------- ROUTER ----------
