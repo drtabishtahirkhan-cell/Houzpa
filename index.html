@@ -264,6 +264,27 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
 @keyframes zbeatm{0%,100%{transform:scaleX(-1)}10%{transform:scaleX(-1.18) scaleY(1.18) rotate(6deg);text-shadow:0 0 18px var(--pink)}}
 .brand .z{display:inline-block}.brand .zm{transform:scaleX(-1)}
 @media (prefers-reduced-motion:reduce){.logo .zm{transform:scaleX(-1)}}
+
+/* gold ZZ glyph (brushed gold Z + mirror Z) */
+.zzmark{display:inline-flex;gap:4%;width:150px;aspect-ratio:2;filter:drop-shadow(0 2px 1px #5b3517)}
+.zzmark.sm{width:58px}
+.zzmark .glyph{width:48%;height:100%;background:repeating-linear-gradient(0deg,#f9d98912 0 1px,transparent 1px 3px),linear-gradient(120deg,#a66e39,#ffdf9f 44%,#c78e4b 74%,#ffe1a4);clip-path:polygon(0 0,100% 0,100% 18%,37% 82%,100% 82%,100% 100%,0 100%,0 86%,71% 18%,0 18%)}
+.zzmark .mirror{transform:scaleX(-1)}
+.grab{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-top:10px}
+.grab h1{font:800 30px/1.1 'Unbounded',sans-serif}
+.grab form{width:100%;text-align:left}
+.grabbtn{font:800 20px 'Unbounded',sans-serif;letter-spacing:3px;min-height:58px}
+.locket{position:relative;width:170px;height:170px;border-radius:50%;display:grid;place-items:center;margin-top:30px;
+  background:radial-gradient(circle at 35% 30%,#3a1c52,#14091f 70%);box-shadow:0 0 0 6px #c78e4b,0 0 0 8px #ffe1a4,0 18px 50px rgba(0,0,0,.6),0 0 60px rgba(242,196,109,.25);animation:swing 3.2s ease-in-out infinite;transform-origin:50% -60px}
+.locket .zzmark{width:110px}
+.locket .chain{position:absolute;top:-62px;left:50%;width:4px;height:58px;transform:translateX(-50%);background:repeating-linear-gradient(180deg,#ffdf9f 0 6px,#a66e39 6px 9px);border-radius:2px}
+.locket.open{animation:pop .6s cubic-bezier(.2,1.6,.4,1),swing 3.2s ease-in-out .6s infinite}
+@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
+.secretcard{width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:linear-gradient(135deg,#24103a,#120a1c);border:1px solid rgba(242,196,109,.45);border-radius:20px;padding:14px 16px;color:var(--txt);font:inherit;cursor:pointer;margin-bottom:6px}
+.secretcard span:nth-child(2){flex:1;display:flex;flex-direction:column}.secretcard small{color:var(--mut);font-size:12.5px}
+.pcard.secret{border-color:rgba(242,196,109,.5)}
+@media (prefers-reduced-motion:reduce){.locket{animation:none}}
 </style>
 </head>
 <body>
@@ -540,9 +561,11 @@ function ageFrom(dob) {
 
 // ---------- 1. LOGIN ----------
 function viewLogin() {
+  const fromLocket = wantsGrab();
   app.innerHTML = `<main class="center">
     ${logo()}
     <p class="tag">Z silent. Party loud.</p>
+    ${fromLocket ? '<p class="okbox">🗝️ Aapka locket code save ho gaya. Login karte hi GRAB page khulega.</p>' : ''}
     <form id="f" class="card">
       <label for="em">Apna email daalo</label>
       <input id="em" type="email" required placeholder="aap@example.com" autocomplete="email">
@@ -665,9 +688,11 @@ async function viewHome(profile) {
     </section>
     ${profile.is_verified ? '' : '<div class="banner">🔒 ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur host nahi kar sakte.</div>'}
     <div class="chiprow" id="filters">${FILTERS.map((f, i) => `<button class="fchip ${i ? '' : 'on'}" type="button">${f}</button>`).join('')}</div>
+    <div id="secret"></div>
     <div id="feed"><div class="skel"></div><div class="skel"></div></div>`);
   bindNav(profile);
   document.getElementById('cityb').onclick = () => cityPicker(profile);
+  drawSecretRoom(profile, document.getElementById('secret'));
   const ib = document.getElementById('instb'); if (ib) ib.onclick = installApp;
 
   const { data, error } = await sb.from('parties')
@@ -898,11 +923,12 @@ function viewMe(profile) {
       <p class="small">${ICON.pin} ${esc(profile.city || '')}</p>
       <div class="badges">
         ${profile.is_verified ? '<span class="badge ok">✓ ID verified</span>' : '<span class="badge warn">ID verification baaki</span>'}
-        ${profile.is_host ? '<span class="badge">Host</span>' : ''}${profile.is_admin ? '<span class="badge gold">Admin</span>' : ''}
+        ${profile.is_host ? '<span class="badge">Host</span>' : ''}${profile.is_admin ? '<span class="badge gold">Admin</span>' : ''}${isVip(profile) ? `<span class="badge gold">🗝️ VIP · ${esc(new Date(profile.vip_until).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))} tak</span>` : ''}
       </div>
     </section>
     <div class="list">
       ${isStandalone() ? '' : '<button class="li" id="inst" type="button"><span>📲 ZASAZ app install karo</span><span>›</span></button>'}
+      <button class="li" id="grabrow" type="button"><span>🗝️ Locket ka code grab karo</span><span>›</span></button>
       <button class="li" id="snd" type="button"><span>🔊 Party sound sunao</span><span>›</span></button>
       <button class="li" id="mute" type="button"><span>${muted ? '🔇 Intro sound band hai' : '🔈 Intro sound on hai'}</span><span class="small">${muted ? 'On karo' : 'Band karo'}</span></button>
       <a class="li" href="tel:112"><span>🆘 Emergency: 112</span><span>›</span></a>
@@ -911,6 +937,7 @@ function viewMe(profile) {
     <p class="small center-t">ZASAZ · Z silent. Party loud.</p>`);
   bindNav(profile);
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
+  document.getElementById('grabrow').onclick = () => viewGrab(profile);
   document.getElementById('snd').onclick = () => window.houzpaPartySound && window.houzpaPartySound();
   const ib = document.getElementById('inst'); if (ib) ib.onclick = installApp;
   document.getElementById('mute').onclick = () => { window.houzpaSetMuted(!muted); viewMe(profile); };
@@ -1142,9 +1169,11 @@ async function viewAdmin(profile) {
   if (!profile.is_admin) return viewHome(profile);
   app.innerHTML = frame('admin', profile, `
     <h2>Admin · Users verify karo</h2><p class="small">Pehle unka ID (Aadhaar/DL) WhatsApp par dekh lo, phir Verify dabao.</p><div id="users" style="margin:10px 0 20px"><div class="skel" style="height:80px"></div></div>
+    <h2>Admin · VIP locket codes</h2><div id="codes" style="margin:10px 0 20px"></div>
     <h2>Admin · Approval ke liye parties</h2><p class="msg" id="msg"></p><div id="list"><p class="empty">Load ho raha hai…</p></div>
   `);
   bindNav(profile);
+  drawCodeMaker(document.getElementById('codes'));
   (async () => {
     const ub = document.getElementById('users');
     const { data: us, error: ue } = await sb.from('profiles').select('id,full_name,city,date_of_birth,created_at').eq('is_verified', false).order('created_at', { ascending: false });
@@ -1192,12 +1221,106 @@ async function viewAdmin(profile) {
   };
 }
 
+// ---------- 7. VIP LOCKET: card code → GRAB → 3 months Secret Room ----------
+// Every guest gets a gold-plated ZZ locket + a card with a one-time code (ZZXXXXXXXX).
+// Open houzpa.vercel.app/?code=ZZ... (or #grab), press GRAB, and Secret Room unlocks for 3 months.
+const PENDING = 'zz_pending_code';
+(function catchCode() {                       // a code in the link is kept until the guest is logged in
+  try {
+    const u = new URL(location.href), c = u.searchParams.get('code');
+    if (c) { localStorage.setItem(PENDING, c); u.searchParams.delete('code'); history.replaceState(null, '', u.pathname + (u.search || '') + '#grab'); }
+  } catch (e) {}
+})();
+const wantsGrab = () => location.hash === '#grab' || !!(() => { try { return localStorage.getItem(PENDING); } catch (e) { return null; } })();
+const isVip = profile => profile.vip_until && new Date(profile.vip_until) > new Date();
+const zzMark = (cls = '') => `<span class="zzmark ${cls}" aria-hidden="true"><i class="glyph"></i><i class="glyph mirror"></i></span>`;
+
+function viewGrab(profile) {
+  let pending = ''; try { pending = localStorage.getItem(PENDING) || ''; } catch (e) {}
+  const vip = isVip(profile);
+  app.innerHTML = frame('me', profile, `
+    <section class="grab">
+      <div class="locket">${zzMark()}<i class="chain"></i></div>
+      <p class="eyebrow">ZASAZ VIP</p>
+      <h1>Locket mila?<br><span class="gold">Code grab karo.</span></h1>
+      ${vip ? `<p class="okbox">🗝️ Aap VIP ho, <b>${esc(new Date(profile.vip_until).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }))}</b> tak. Naya code grab karoge to 3 mahine aur jud jayenge.</p>` : ''}
+      <form id="gf" class="card">
+        <label for="gc">Card ke peeche likha code</label>
+        <input id="gc" required autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ZZ7K3Q9P4M" value="${esc(pending)}" style="font:800 22px Unbounded,sans-serif;letter-spacing:3px;text-align:center;text-transform:uppercase">
+        <button class="btn gold grabbtn" id="gb" type="submit">GRAB 🗝️</button>
+        <p class="msg" id="gm"></p>
+      </form>
+      <p class="small center-t">3 mahine ka Secret Room access: invite-only parties, sirf VIPs ke liye. Ek code, ek insaan, ek baar.</p>
+    </section>`);
+  bindNav(profile);
+  document.getElementById('gf').onsubmit = async e => {
+    e.preventDefault();
+    const btn = document.getElementById('gb'), msg = document.getElementById('gm');
+    btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Check ho raha hai…';
+    const { data, error } = await sb.rpc('redeem_vip_code', { p_code: document.getElementById('gc').value });
+    btn.disabled = false;
+    const say = { invalid: 'Ye code sahi nahi hai. Card dobara dekho.', used: 'Ye code pehle hi kisi aur ne grab kar liya.', yours: 'Ye code aap pehle hi grab kar chuke ho. ✅', expired: 'Is card ki validity khatam ho gayi.', login: 'Pehle login karo.', profile: 'Pehle apna profile banao.' };
+    if (error) { msg.className = 'msg err'; msg.textContent = 'Error: ' + error.message; return; }
+    if (!String(data).startsWith('ok|')) {
+      if (!['login', 'profile'].includes(data)) { try { localStorage.removeItem(PENDING); } catch (e) {} }
+      msg.className = 'msg err'; msg.textContent = say[data] || data; return;
+    }
+    try { localStorage.removeItem(PENDING); } catch (e) {}
+    if (location.hash === '#grab') history.replaceState(null, '', location.pathname);
+    profile.vip_until = data.split('|')[1];
+    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 160]);
+    if (window.houzpaPartySound && !(window.houzpaMuted && window.houzpaMuted())) window.houzpaPartySound();
+    const until = new Date(profile.vip_until).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.querySelector('.grab').innerHTML = `
+      <div class="locket open">${zzMark()}<i class="chain"></i></div>
+      <p class="eyebrow">Welcome to the</p>
+      <h1><span class="gold">Secret Room.</span> 🗝️</h1>
+      <p class="okbox">VIP unlocked, <b>${esc(until)}</b> tak.</p>
+      <button class="btn gold" id="toroom" type="button">Secret Room parties dekho →</button>`;
+    document.getElementById('toroom').onclick = () => viewHome(profile);
+  };
+}
+
+async function drawSecretRoom(profile, box) {
+  if (!isVip(profile)) {
+    box.innerHTML = `<button class="secretcard" id="sr" type="button">${zzMark('sm')}<span><b>🗝️ Secret Room</b><small>Locket ka code grab karo, invite-only parties kholo</small></span><span>›</span></button>`;
+    document.getElementById('sr').onclick = () => viewGrab(profile);
+    return;
+  }
+  const { data } = await sb.from('parties').select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,ticket_tiers(price_inr,quantity,sold)')
+    .eq('status', 'published').eq('visibility', 'secret').gte('starts_at', new Date().toISOString()).order('starts_at');
+  box.innerHTML = `<h2 class="sec">🗝️ Secret Room <span class="count">VIP</span></h2>` + (data && data.length
+    ? `<div class="carousel">${data.map(p => `<article class="pcard big secret" data-party="${p.id}"><div class="pcover" style="background:${cover(p).bg}"><span class="emo">🗝️</span>${dayBox(p.starts_at)}<div class="shade"></div><div class="ptitle"><h3>${esc(p.name)}</h3><p>${esc(p.area)} · invite-only</p></div></div></article>`).join('')}</div>`
+    : '<p class="small">Abhi koi Secret Room party nahi. Jaise hi aayegi, sabse pehle aapko dikhegi. 🤫</p>');
+  box.querySelectorAll('[data-party]').forEach(el => el.onclick = () => viewParty(profile, el.dataset.party));
+}
+
+async function drawCodeMaker(box) {
+  box.innerHTML = `<div class="card">
+    <label for="cn">Kitne lockets/cards? (1–500)</label>
+    <div class="row" style="flex-wrap:nowrap"><input id="cn" type="number" min="1" max="500" value="25" inputmode="numeric"><button class="btn gold sm" id="cmk" type="button" style="flex:none">Codes banao</button></div>
+    <p class="small">Har code ek baar chalega, 3 mahine mein expire. Card par code aur ye link chhapo: <b>houzpa.vercel.app/?code=CODE</b></p>
+    <div id="cout"></div></div>`;
+  document.getElementById('cmk').onclick = async () => {
+    const n = Math.max(1, Math.min(500, +document.getElementById('cn').value || 0)), out = document.getElementById('cout');
+    out.innerHTML = '<p class="small">Ban rahe hain…</p>';
+    const { data, error } = await sb.rpc('generate_vip_codes', { p_count: n });
+    if (error) { out.innerHTML = `<p class="msg err">Error: ${esc(error.message)}</p>`; return; }
+    const codes = data.map(r => typeof r === 'string' ? r : r.generate_vip_codes);
+    out.innerHTML = `<textarea id="ctxt" rows="8" readonly style="font:600 14px monospace">${codes.join('\n')}</textarea><button class="btn ghost sm" id="ccp" type="button">📋 Sab copy karo</button>`;
+    document.getElementById('ccp').onclick = async () => { try { await navigator.clipboard.writeText(codes.join('\n')); toast('Copy ho gaye ✓'); } catch (e) { document.getElementById('ctxt').select(); toast('Select ho gaye, ab copy karo'); } };
+  };
+}
+
 // ---------- ROUTER ----------
 async function route() {
   if (!session) return viewLogin();
   const { data: profile, error } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
   if (error) { app.innerHTML = `<main class="center">${logo()}<p class="msg err">Error: ${esc(error.message)}</p></main>`; return; }
   if (!profile) return viewProfile();
+  const { data: vip } = await sb.from('vip_members').select('vip_until').eq('user_id', session.user.id).maybeSingle();
+  profile.vip_until = vip?.vip_until || null;
+  if (wantsGrab()) return viewGrab(profile);
   viewHome(profile);
 }
 
