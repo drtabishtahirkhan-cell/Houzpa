@@ -5,32 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HOUZPA · Who's party? Ma houz party.</title>
 <meta name="theme-color" content="#15112B">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#15112B;--card:#1F1A3D;--line:#332C5E;--txt:#F4F1FF;--mut:#B9B2DA;--amber:#FFB547;--pink:#FF4F9A;--ok:#4ADE80;--warn:#FBBF24}
+:root{--bg:#15112B;--card:#1F1A3D;--line:#332C5E;--txt:#F4F1FF;--mut:#B9B2DA;--amber:#FFB547;--pink:#FF4F9A;--cyan:#3DE8FF;--ok:#4ADE80;--warn:#FBBF24}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-main{max-width:460px;margin:0 auto;padding:20px 16px 110px;min-height:100vh}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+/* moving party glow behind the app */
+body::before{content:"";position:fixed;inset:-30%;z-index:-1;background:
+  radial-gradient(circle at 20% 30%,rgba(255,79,154,.22),transparent 35%),
+  radial-gradient(circle at 80% 20%,rgba(255,181,71,.16),transparent 35%),
+  radial-gradient(circle at 60% 80%,rgba(61,232,255,.14),transparent 40%);
+  animation:glow 14s ease-in-out infinite alternate}
+@keyframes glow{to{transform:rotate(25deg) scale(1.15)}}
+main{max-width:460px;margin:0 auto;padding:20px 16px 110px;min-height:100vh;animation:rise .5s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .center{display:flex;flex-direction:column;justify-content:center;gap:16px}
 .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;letter-spacing:1px;line-height:1}
 .logo.sm{font-size:26px}
-.logo .h{color:var(--amber)}.logo .z{color:#fff}.logo .p{color:var(--pink)}
+.logo .h{color:var(--amber)}.logo .z{color:#fff;display:inline-block}.logo .p{color:var(--pink)}
+.logo .z{animation:zbeat 1.6s ease-in-out infinite}
+@keyframes zbeat{0%,100%{transform:scale(1)}10%{transform:scale(1.18) rotate(-6deg);text-shadow:0 0 18px var(--pink)}}
 .tag{color:var(--mut);font-size:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card{background:rgba(31,26,61,.85);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(6px)}
 label{font-size:13px;color:var(--mut);font-weight:500}
 input{width:100%;background:#120E26;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font:inherit;outline:none}
-input:focus{border-color:var(--amber)}
-.btn{background:var(--pink);color:#fff;border:0;border-radius:12px;padding:13px 16px;font:600 15px Inter,sans-serif;cursor:pointer;min-height:46px}
+input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,181,71,.15)}
+.btn{background:linear-gradient(90deg,var(--pink),#FF7A59);color:#fff;border:0;border-radius:12px;padding:13px 16px;font:600 15px Inter,sans-serif;cursor:pointer;min-height:46px;transition:transform .12s}
+.btn:active{transform:scale(.96)}
 .btn:disabled{opacity:.6}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
 .msg{font-size:14px;color:var(--amber);min-height:20px}
 .err{color:#FF8A8A}
 .small{font-size:13px;color:var(--mut)}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.hbtns{display:flex;gap:8px}
+.icon-btn{background:transparent;border:1px solid var(--line);color:var(--txt);border-radius:12px;min-width:46px;min-height:46px;font-size:18px;cursor:pointer}
 .banner{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#FDE68A;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:14px}
 h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:6px 0 10px}
-.party{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.party{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px;opacity:0;animation:rise .45s ease-out forwards}
 .party .cover{height:130px;background:linear-gradient(135deg,#3A2F6B,#15112B);display:flex;align-items:flex-end;padding:10px}
 .party .cover img{width:100%;height:100%;object-fit:cover}
 .party .body{padding:12px 14px;display:flex;flex-direction:column;gap:4px}
@@ -60,12 +76,257 @@ textarea{min-height:80px;resize:vertical}
 .st-cancelled,.st-draft{background:rgba(255,138,138,.12);color:#FFB4B4}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--mut)}
 .check input{width:auto;margin-top:3px}
-.sos{position:fixed;right:16px;bottom:20px;background:#E11D48;color:#fff;font-weight:700;text-decoration:none;border-radius:99px;padding:14px 20px;box-shadow:0 4px 18px rgba(225,29,72,.45)}
+.sos{position:fixed;right:16px;bottom:20px;background:#E11D48;color:#fff;font-weight:700;text-decoration:none;border-radius:99px;padding:14px 20px;box-shadow:0 4px 18px rgba(225,29,72,.45);z-index:5}
+
+/* ===== PARTY MODE SPLASH ===== */
+#splash{position:fixed;inset:0;z-index:50;background:#0B0820;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;overflow:hidden;transition:opacity .5s}
+#splash.out{opacity:0;pointer-events:none}
+#splash .beam{position:absolute;bottom:-10%;width:40vmax;height:120vmax;transform-origin:bottom center;opacity:.35;filter:blur(2px);
+  background:linear-gradient(to top,var(--c),transparent 70%);clip-path:polygon(46% 100%,54% 100%,100% 0,0 0)}
+#splash .b1{--c:var(--pink);left:5%;animation:sweepL 2.4s ease-in-out infinite alternate}
+#splash .b2{--c:var(--amber);right:5%;animation:sweepR 2.1s ease-in-out infinite alternate}
+#splash .b3{--c:var(--cyan);left:35%;animation:sweepL 2.8s ease-in-out infinite alternate-reverse}
+@keyframes sweepL{from{transform:rotate(-28deg)}to{transform:rotate(18deg)}}
+@keyframes sweepR{from{transform:rotate(28deg)}to{transform:rotate(-18deg)}}
+#splash .big{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:64px;line-height:1;position:relative;z-index:2;text-shadow:0 3px 0 #0B0820,0 0 14px rgba(11,8,32,.8)}
+#splash .big .z{display:inline-block}
+/* neon sign: the Z's top bar (roof over HOU) and bottom bar (floor under PA) stretch with the beat */
+#splash .big.sign{width:min(92vw,520px);text-shadow:none;animation:signIn .45s cubic-bezier(.2,1.4,.4,1) both}
+#splash .big.sign svg{width:100%;height:auto;display:block;overflow:visible}
+#splash .sign .frame{fill:rgba(11,8,32,.55);stroke:var(--pink);stroke-width:5;filter:drop-shadow(0 0 10px rgba(255,79,154,.8))}
+#splash .sign text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:86px}
+#splash .sign .hou{fill:var(--amber);filter:drop-shadow(0 0 9px rgba(255,181,71,.75))}
+#splash .sign .pa{fill:var(--pink);filter:drop-shadow(0 0 9px rgba(255,79,154,.85))}
+#splash .sign .zline{fill:rgba(255,255,255,.06);stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 12px rgba(255,255,255,.7))}
+@keyframes signIn{from{transform:scale(.35)}to{transform:scale(1)}}
+#splash .sub{position:relative;z-index:2;color:var(--mut);font-size:15px;text-align:center;padding:0 24px}
+#goParty{position:relative;z-index:2;font-size:18px;padding:16px 28px;border-radius:99px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,79,154,.6)}50%{box-shadow:0 0 0 18px rgba(255,79,154,0)}}
+#skip{position:absolute;bottom:28px;z-index:2;background:none;border:0;color:var(--mut);font:500 14px Inter,sans-serif;text-decoration:underline;cursor:pointer}
+#splash{transition:opacity .5s,background-color .12s}
+@keyframes slam{from{transform:scale(2.2);text-shadow:0 0 40px #fff}to{transform:scale(1)}}
+@keyframes shake{20%{transform:translate(-8px,4px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-5px,2px)}80%{transform:translate(4px,-2px)}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:60}
+@keyframes flash{0%{opacity:.85}100%{opacity:0}}
+#onair{position:relative;z-index:2;font:700 13px 'Space Grotesk',sans-serif;letter-spacing:3px;color:#0B0820;background:var(--amber);padding:6px 14px;border-radius:6px;opacity:0;transition:opacity .3s}
+@keyframes popin{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.confetti{position:fixed;top:-20px;width:9px;height:14px;z-index:55;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.party{opacity:1}#onair{opacity:1}}
 </style>
 </head>
 <body>
+<!-- PARTY MODE SPLASH: sound needs one tap (phone browsers block auto-play) -->
+<div id="splash" role="dialog" aria-label="HOUZPA party mode">
+  <div class="beam b1"></div><div class="beam b2"></div><div class="beam b3"></div>
+  <div class="big sign">
+    <svg viewBox="0 0 600 260" role="img" aria-label="HOUZPA">
+      <rect class="frame" x="12" y="12" width="576" height="236" rx="32"></rect>
+      <text class="hou" x="34" y="166">HOU</text>
+      <path id="zpath" class="zline" d=""></path>
+      <text class="pa" x="372" y="166">PA</text>
+    </svg>
+  </div>
+  <div id="onair">PARTY MODE ON</div>
+  <p class="sub">Who's party? Ma houz party.</p>
+  <button class="btn" id="goParty" type="button">🔊 Party mode ON karo</button>
+  <button id="skip" type="button">Bina awaaz ke aage badho</button>
+</div>
+<div id="flash"></div>
+
 <div id="app"><main class="center"><div class="logo"><span class="h">HOU</span><span class="z">Z</span><span class="p">PA</span></div><p class="tag">Loading…</p></main></div>
 <a class="sos" href="tel:112" aria-label="Emergency SOS, call 112">SOS</a>
+
+<script>
+// ===== PARTY MODE: original stadium-style intro, made in code (no copyrighted music) =====
+(function(){
+  const splash = document.getElementById('splash');
+  const BEAT = .42;
+  const BEATS = Array.from({length: 28}, (_, i) => i * BEAT);   // 28 dhoom-dhoom beats (~11.8s)
+  const BUILD_START = 8.4;                                      // build-up starts while beats go on
+  const DROPS = [13.6, 15.3, 17.0];                             // three drops
+  const END = 18.6;
+  const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
+  window.houzpaMuted = () => store.get('houzpa_muted') === '1';
+  window.houzpaSetMuted = m => store.set('houzpa_muted', m ? '1' : '0');
+  let ac = null, timers = [];
+  const later = (sec, fn) => timers.push(setTimeout(fn, sec * 1000));
+
+  function noiseBuf(len, pow){
+    const b = ac.createBuffer(1, Math.max(1, ac.sampleRate*len), ac.sampleRate), d = b.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, pow);
+    return b;
+  }
+  function kick(t, out){
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(40,t+.18);
+    g.gain.setValueAtTime(1,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+    o.connect(g).connect(out); o.start(t); o.stop(t+.32);
+  }
+  function clap(t, out, vol){
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf(.12, 4); f.type='bandpass'; f.frequency.value=1500; g.gain.value=vol;
+    s.connect(f).connect(g).connect(out); s.start(t);
+  }
+  function snare(t, out, vol){
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf(.09, 3); f.type='highpass'; f.frequency.value=1800; g.gain.value=vol;
+    s.connect(f).connect(g).connect(out); s.start(t);
+  }
+  function hoot(t, out){   // "whooo!" from the crowd
+    const o = ac.createOscillator(), v = ac.createOscillator(), vg = ac.createGain(), g = ac.createGain();
+    const base = 520 + Math.random()*260;
+    o.type='triangle'; o.frequency.setValueAtTime(base,t); o.frequency.linearRampToValueAtTime(base*1.5,t+.25); o.frequency.linearRampToValueAtTime(base*1.2,t+.7);
+    v.frequency.value = 6; vg.gain.value = 14; v.connect(vg).connect(o.frequency);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.05,t+.08); g.gain.linearRampToValueAtTime(0,t+.7);
+    o.connect(g).connect(out); o.start(t); v.start(t); o.stop(t+.72); v.stop(t+.72);
+  }
+  function drop(d, out){
+    [[0,.18],[.24,.18],[.48,.75]].forEach(([s,len]) => {
+      [233,349,466,470].forEach(f => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type='sawtooth'; o.frequency.value=f;
+        g.gain.setValueAtTime(0,d+s); g.gain.linearRampToValueAtTime(.12,d+s+.02); g.gain.setValueAtTime(.12,d+s+len-.05); g.gain.linearRampToValueAtTime(0,d+s+len);
+        o.connect(g).connect(out); o.start(d+s); o.stop(d+s+len+.02);
+      });
+    });
+    const b = ac.createOscillator(), bg = ac.createGain();
+    b.type='sine'; b.frequency.setValueAtTime(90,d); b.frequency.exponentialRampToValueAtTime(30,d+.8);
+    bg.gain.setValueAtTime(1.2,d); bg.gain.exponentialRampToValueAtTime(.001,d+1);
+    b.connect(bg).connect(out); b.start(d); b.stop(d+1.05);
+    const n = ac.createBufferSource(), hp = ac.createBiquadFilter(), ng = ac.createGain();
+    n.buffer = noiseBuf(1.2, 3); hp.type='highpass'; hp.frequency.value=3000; ng.gain.value=.35;
+    n.connect(hp).connect(ng).connect(out); n.start(d);
+  }
+
+  function partySound(){
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ac = new AC(); const t0 = ac.currentTime + .05;
+    const master = ac.createGain(); master.gain.value = .55; master.connect(ac.destination);
+    // 1) 28 dhoom-dhoom kicks
+    BEATS.forEach(s => kick(t0+s, master));
+    // 2) claps join after 8 beats, getting louder
+    BEATS.slice(8).forEach((s,i) => clap(t0+s+BEAT/2, master, .3 + i*.015));
+    // 3) stadium crowd roar: filtered noise that swells, plus random "whooo" hoots
+    const crowd = ac.createBufferSource(), cf = ac.createBiquadFilter(), cg = ac.createGain();
+    const cb = ac.createBuffer(1, ac.sampleRate*(END+1), ac.sampleRate), cd = cb.getChannelData(0);
+    for (let i=0;i<cd.length;i++) cd[i] = Math.random()*2-1;
+    crowd.buffer = cb; cf.type='bandpass'; cf.frequency.value=900; cf.Q.value=.6;
+    cg.gain.setValueAtTime(0,t0); cg.gain.linearRampToValueAtTime(.05,t0+3); cg.gain.linearRampToValueAtTime(.14,t0+DROPS[0]);
+    cg.gain.setValueAtTime(.18,t0+DROPS[0]); cg.gain.linearRampToValueAtTime(0,t0+END);
+    crowd.connect(cf).connect(cg).connect(master); crowd.start(t0); crowd.stop(t0+END);
+    for (let t=3; t<END-1; t+= .5 + Math.random()*.9) hoot(t0+t, master);
+    // 4) longer build-up: rising synth + snare roll that speeds up
+    const r = ac.createOscillator(), rf = ac.createBiquadFilter(), rg = ac.createGain(), D = DROPS[0];
+    r.type='sawtooth'; r.frequency.setValueAtTime(150,t0+BUILD_START); r.frequency.exponentialRampToValueAtTime(1600,t0+D-.05);
+    rf.type='lowpass'; rf.frequency.setValueAtTime(300,t0+BUILD_START); rf.frequency.exponentialRampToValueAtTime(7000,t0+D-.05);
+    rg.gain.setValueAtTime(.001,t0+BUILD_START); rg.gain.exponentialRampToValueAtTime(.25,t0+D-.1); rg.gain.linearRampToValueAtTime(0,t0+D);
+    r.connect(rf).connect(rg).connect(master); r.start(t0+BUILD_START); r.stop(t0+D+.05);
+    for (let t=BEATS[27]+BEAT, gap=.24; t < D-.06; t += gap, gap = Math.max(.05, gap*.88)) snare(t0+t, master, .25 + (t-BEATS[27])*.06);
+    // 5) three drops
+    DROPS.forEach(d => drop(t0+d, master));
+  }
+
+  function confetti(at){
+    const cols = ['#FF4F9A','#FFB547','#3DE8FF','#ffffff','#A78BFA','#4ADE80'];
+    later(at, () => {
+      for (let i=0;i<70;i++){
+        const c = document.createElement('div'); c.className='confetti';
+        c.style.left = Math.random()*100+'vw';
+        c.style.background = cols[i%cols.length];
+        c.style.borderRadius = Math.random()<.4 ? '50%' : '2px';
+        c.style.setProperty('--dx', (Math.random()*160-80)+'px');
+        c.style.setProperty('--r', (Math.random()*1080)+'deg');
+        c.style.animationDuration = (1.6+Math.random()*1.6)+'s';
+        c.style.animationDelay = (Math.random()*.4)+'s';
+        document.body.appendChild(c); setTimeout(()=>c.remove(), 4000);
+      }
+    });
+  }
+
+  // background blinks in party colours (always under 3 flashes per second: safe for photosensitive users)
+  function blink(){
+    const cols = ['#7A1048','#7A4A00','#06606E','#3B1F8F','#5E0B6B','#0B5E3A'];
+    BEATS.forEach((s,i) => later(s, () => { splash.style.backgroundColor = cols[i % cols.length]; }));
+    for (let t=DROPS[0], k=0; t<END-.3; t+=.36, k++) later(t, () => { splash.style.backgroundColor = cols[(k*2+1) % cols.length]; });
+  }
+
+  function dropHit(at){
+    later(at, () => {
+      const big = splash.querySelector('.big'), fl = document.getElementById('flash');
+      if (fl.animate) {
+        fl.animate([{opacity:.85},{opacity:0}], {duration:450});
+        splash.animate([{transform:'translate(0,0)'},{transform:'translate(-8px,4px)'},{transform:'translate(8px,-4px)'},{transform:'translate(-5px,2px)'},{transform:'translate(0,0)'}], {duration:500});
+        big.animate([{transform:'scale(2.2)'},{transform:'scale(1)'}], {duration:500, easing:'cubic-bezier(.2,1.6,.4,1)'});
+      }
+      document.getElementById('onair').style.opacity = 1;
+    });
+    confetti(at);
+  }
+
+  // ----- the dancing Z: bar length follows the beat -----
+  const zp = document.getElementById('zpath');
+  let startT = null; const idle0 = performance.now();
+  function zPath(e){          // e = how far the bars stick out
+    const T=58, th=24, B=196, xl=250, xr=352, dx=34;
+    return `M${xl-e} ${T} H${xr} V${T+th} L${xl+dx} ${B-th} H${xr+e} V${B} H${xl} V${B-th} L${xr-dx} ${T+th} H${xl-e} Z`;
+  }
+  // Z dance = two moves: bars stretch on the beat, and the whole Z spins
+  //   - every 4th beat: one quick full spin (bars pulled in while spinning)
+  //   - build-up: spins faster and faster, then lands upright exactly on the drop
+  //   - drops: bars shoot out longest
+  const CX = 301, CY = 127, SPIN = .4;
+  const ease = x => x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+  function zState(now){
+    const base = 40;
+    if (startT === null) { const ph = ((now-idle0)/1000) % (BEAT*2); return { e: base + 70*Math.exp(-ph/.18), a: 0 }; }
+    const t = (now-startT)/1000, lastBeat = BEATS[BEATS.length-1], bs = lastBeat + BEAT;
+    if (t >= bs && t < DROPS[0]) {                      // build-up: accelerating spin
+      const p = (t-bs)/(DROPS[0]-bs);
+      return { e: 10, a: 2160*p*p };
+    }
+    for (let i=4; i<BEATS.length; i+=4) {               // quick spin on every 4th beat
+      const b = BEATS[i];
+      if (t >= b && t < b+SPIN) return { e: 0, a: 360*ease((t-b)/SPIN) };
+    }
+    let ev = -9, amp = 120;
+    BEATS.forEach(b => { if (b <= t) { ev = b; amp = 120; } });
+    for (let d=DROPS[0]; d<=t && d<END; d+=.36) { ev = d; amp = 150; }
+    DROPS.forEach(d => { if (d <= t && t-d < .3) { ev = d; amp = 200; } });
+    for (const d of DROPS.slice(0,2)) {                 // a spin between the drops too
+      const s0 = d + .95; if (t >= s0 && t < s0+SPIN) return { e: 0, a: -360*ease((t-s0)/SPIN) };
+    }
+    return { e: base + amp*Math.exp(-(t-ev)/.16), a: 0 };
+  }
+  (function frame(now){
+    if (!document.body.contains(splash)) return;
+    const z = zState(now);
+    zp.setAttribute('d', zPath(Math.max(0, z.e)));
+    zp.setAttribute('transform', `rotate(${(z.a % 360).toFixed(2)} ${CX} ${CY})`);
+    requestAnimationFrame(frame);
+  })(performance.now());
+
+  function close(){
+    timers.forEach(clearTimeout); timers = [];
+    if (ac) { try{ ac.close(); }catch(e){} ac = null; }
+    splash.classList.add('out'); setTimeout(()=>splash.remove(), 600);
+  }
+
+  document.getElementById('goParty').onclick = () => {
+    houzpaSetMuted(false);
+    try { partySound(); } catch(e){}
+    if (navigator.vibrate) navigator.vibrate(BEATS.flatMap(() => [60, BEAT*1000-60]).concat([0, (DROPS[0]-BEATS.length*BEAT)*1000, 400, 1300, 400, 1300, 600]));
+    blink();
+    splash.classList.add('on'); startT = performance.now();
+    document.getElementById('goParty').style.display = 'none';
+    const sk = document.getElementById('skip'); sk.textContent = 'Skip ⏭'; sk.onclick = close;
+    DROPS.forEach(dropHit);
+    later(END, close);
+  };
+  document.getElementById('skip').onclick = () => { houzpaSetMuted(true); close(); };
+  window.houzpaPartySound = () => { try{ partySound(); }catch(e){} };
+})();
+</script>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -122,7 +383,7 @@ function viewProfile() {
     <h2>Apna profile banao</h2>
     <form id="f" class="card">
       <label for="nm">Poora naam</label>
-      <input id="nm" required minlength="2" placeholder="Jaise: Fahmeena Khan">
+      <input id="nm" required minlength="2" placeholder="Apna poora naam">
       <label for="ct">Shehar</label>
       <input id="ct" required value="Lucknow">
       <label for="dob">Janam tithi</label>
@@ -153,7 +414,9 @@ function viewProfile() {
 async function viewHome(profile) {
   const city = profile.city || 'Lucknow';
   app.innerHTML = `<main>
-    <header>${logo('sm')}<button class="btn ghost" id="out" type="button">Logout</button></header>
+    <header>${logo('sm')}<div class="hbtns">
+      <button class="icon-btn" id="snd" type="button" aria-label="Party sound">🎉</button>
+      <button class="btn ghost" id="out" type="button">Logout</button></div></header>
     ${profile.is_verified ? '' : '<div class="banner">Aapka ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur party host nahi kar sakte.</div>'}
     <div class="nav">
       ${profile.is_verified ? '<button class="btn" id="new" type="button">＋ Party banao</button>' : ''}
@@ -165,6 +428,7 @@ async function viewHome(profile) {
     <div id="feed"><p class="empty">Parties dhoondh rahe hain…</p></div>
   </main>`;
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
+  document.getElementById('snd').onclick = () => { if (!window.houzpaMuted()) window.houzpaPartySound(); };
   const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   on('new', () => viewCreate(profile));
   on('mine', () => viewMine(profile));
@@ -179,12 +443,12 @@ async function viewHome(profile) {
   if (error) { feed.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
   if (!data.length) { feed.innerHTML = `<p class="empty">Abhi ${esc(city)} mein koi party listed nahi hai.<br>Jald aa rahi hain! 🎉</p>`; return; }
 
-  feed.innerHTML = data.map(p => {
+  feed.innerHTML = data.map((p, i) => {
     const prices = (p.ticket_tiers || []).map(t => t.price_inr);
     const from = prices.length ? '₹' + Math.min(...prices) : '';
     const when = new Date(p.starts_at).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
     const alc = p.alcohol && p.alcohol !== 'No alcohol';
-    return `<article class="party">
+    return `<article class="party" style="animation-delay:${i * 90}ms">
       <div class="cover">${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="">` : ''}</div>
       <div class="body">
         <h3>${esc(p.name)}</h3>
