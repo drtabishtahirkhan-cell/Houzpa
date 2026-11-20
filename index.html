@@ -6,6 +6,10 @@
 <title>HOUZPA · Who's party? Ma houz party.</title>
 <meta name="theme-color" content="#0A0A0C">
 <link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HOUZPA">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,6 +219,40 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
 .pick{background:#0F0F13;border-color:var(--line)}
 .carousel{scroll-padding-left:16px}
 .carousel::after{content:"";flex:0 0 4px}
+
+/* booking + passes + sheet */
+.backlink{background:none;border:0;color:var(--mut);font:600 14px Inter,sans-serif;padding:8px 0;cursor:pointer}
+.hero-cover{position:relative;height:280px;border-radius:24px;overflow:hidden;display:flex;align-items:flex-end;margin-bottom:12px}
+.facts{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.facts div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column}
+.facts b{font-size:13px}.facts span{font-size:11px;color:var(--mut)}
+.hostrow{flex-direction:row;align-items:center;gap:12px;margin-bottom:12px}
+.avatar.sm{width:44px;height:44px;border-radius:14px;font-size:18px;margin:0}
+.desc{color:#DDD7CB;margin:0 2px 12px;font-size:15px}
+.card+.card{margin-top:12px}
+#buy{margin-top:12px;border-color:rgba(242,196,109,.4)}
+.tierbtn{display:flex;justify-content:space-between;align-items:center;width:100%;background:#0F0F13;border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit;text-align:left}
+.tierbtn span{display:flex;flex-direction:column}.tierbtn small{color:var(--mut);font-size:12px}
+.tierbtn.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber) inset}
+.tierbtn:disabled{opacity:.4}
+.qty{display:flex;align-items:center;gap:14px}
+.qty button{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:#0F0F13;color:#fff;font-size:20px;cursor:pointer}
+.btn.sm{min-height:38px;padding:8px 14px;font-size:13px}
+.userrow{flex-direction:row;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pass{background:linear-gradient(180deg,#1E1A12,var(--card));border:1px solid rgba(242,196,109,.45);border-radius:22px;padding:16px;margin-bottom:14px}
+.passtop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.passtop .badge{white-space:nowrap;flex:none}
+.passtop h3{font:800 16px 'Unbounded',sans-serif}.passtop p{color:var(--mut);font-size:13px}
+.qr{background:#fff;border-radius:16px;padding:10px;width:max-content;margin:14px auto 6px}
+.qr img{display:block;width:200px;height:200px}
+.code{text-align:center;font:800 18px 'Unbounded',sans-serif;letter-spacing:2px;color:var(--gold1);margin-bottom:8px}
+.city.inst{margin-left:8px;color:var(--gold1);border-color:rgba(242,196,109,.45)}
+#sheet{position:fixed;inset:0;z-index:80}
+.sheetbg{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.sheetbox{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;background:var(--card2);border-radius:24px 24px 0 0;padding:12px 18px calc(28px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(100%)}}
+.grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+.steps{padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
 </style>
 </head>
 <body>
@@ -568,23 +606,25 @@ const dayBox = d => { const x = new Date(d); return `<div class="datebox"><b>${x
 
 // ---------- 3. HOME ----------
 async function viewHome(profile) {
-  const city = profile.city || 'Lucknow', first = esc(profile.full_name.split(' ')[0]);
+  const city = pickedCity(profile), first = esc(profile.full_name.split(' ')[0]);
   const hour = new Date().getHours(), hello = hour < 12 ? 'Good morning' : hour < 17 ? 'Hey' : 'Good evening';
   const FILTERS = ['Sab', 'Aaj raat', 'Weekend', 'Rooftop', 'Pool', 'Live music', '₹800 se kam'];
   app.innerHTML = frame('home', profile, `
     <section class="hero">
       <p class="eyebrow">${hello}, ${first} 👋</p>
       <h1>Aaj raat<br><span class="gold">kahan party?</span></h1>
-      <div class="city">${ICON.pin}<span>${esc(city)}</span></div>
+      <button class="city" id="cityb" type="button">${ICON.pin}<span>${esc(city)}</span><span class="small">▾</span></button>${isStandalone() ? '' : '<button class="city inst" id="instb" type="button">📲 App install karo</button>'}
     </section>
     ${profile.is_verified ? '' : '<div class="banner">🔒 ID verification baaki hai. Tab tak parties dekh sakte ho, pass nahi le sakte aur host nahi kar sakte.</div>'}
     <div class="chiprow" id="filters">${FILTERS.map((f, i) => `<button class="fchip ${i ? '' : 'on'}" type="button">${f}</button>`).join('')}</div>
     <div id="feed"><div class="skel"></div><div class="skel"></div></div>`);
   bindNav(profile);
+  document.getElementById('cityb').onclick = () => cityPicker(profile);
+  const ib = document.getElementById('instb'); if (ib) ib.onclick = installApp;
 
   const { data, error } = await sb.from('parties')
     .select('id,name,area,city,venue_type,starts_at,alcohol,cover_url,has_pool,music,safe_capacity,ticket_tiers(price_inr,quantity,sold)')
-    .eq('city', city).eq('status', 'published').eq('visibility', 'public')
+    [city === 'Sab shehar' ? 'neq' : 'ilike']('city', city === 'Sab shehar' ? '' : city).eq('status', 'published').eq('visibility', 'public')
     .gte('starts_at', new Date().toISOString())
     .order('starts_at');
   const feed = document.getElementById('feed');
@@ -601,7 +641,7 @@ async function viewHome(profile) {
       const prices = (p.ticket_tiers || []).map(t => t.price_inr), left = (p.ticket_tiers || []).reduce((a, t) => a + t.quantity - t.sold, 0);
       const c = cover(p), alc = p.alcohol && p.alcohol !== 'No alcohol';
       const time = new Date(p.starts_at).toLocaleString('en-IN', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
-      return `<article class="pcard ${big ? 'big' : ''}" style="animation-delay:${i * 80}ms">
+      return `<article class="pcard ${big ? 'big' : ''}" data-party="${p.id}" style="animation-delay:${i * 80}ms">
         <div class="pcover" style="background:${p.cover_url ? `url('${esc(p.cover_url)}') center/cover` : c.bg}">
           ${p.cover_url ? '' : `<span class="emo">${c.e}</span>`}
           ${dayBox(p.starts_at)}
@@ -616,6 +656,7 @@ async function viewHome(profile) {
     const soon = list.filter(p => new Date(p.starts_at) - new Date() < 7 * 864e5);
     feed.innerHTML = (soon.length ? `<h2 class="sec">🔥 Is hafte</h2><div class="carousel">${soon.map((p, i) => card(p, i, true)).join('')}</div>` : '')
       + `<h2 class="sec">Sab parties <span class="count">${list.length}</span></h2>${list.map((p, i) => card(p, i)).join('')}`;
+    feed.querySelectorAll('[data-party]').forEach(el => el.onclick = () => viewParty(profile, el.dataset.party));
   };
   const test = {
     'Sab': () => true,
@@ -634,6 +675,170 @@ async function viewHome(profile) {
   draw(data);
 }
 
+// ---------- SHEHAR (pan-India) ----------
+const CITIES = ['Lucknow', 'Delhi', 'Noida', 'Gurugram', 'Mumbai', 'Pune', 'Bengaluru', 'Hyderabad', 'Chennai', 'Kolkata', 'Goa', 'Jaipur', 'Chandigarh', 'Ahmedabad', 'Indore', 'Kanpur', 'Varanasi', 'Dehradun', 'Kochi', 'Bhopal'];
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const pickedCity = profile => store.get('houzpa_city') || profile.city || 'Lucknow';
+function cityPicker(profile) {
+  const cur = pickedCity(profile);
+  sheet(`<h2>Shehar chuno 📍</h2>
+    <div class="chips citylist">${['Sab shehar', ...CITIES].map(c => `<button class="pick ${c === cur ? 'on' : ''}" data-c="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div>`);
+  document.querySelector('.citylist').onclick = e => {
+    const c = e.target.dataset.c; if (!c) return;
+    store.set('houzpa_city', c); closeSheet(); viewHome(profile);
+  };
+}
+function sheet(html) {
+  closeSheet();
+  const el = document.createElement('div'); el.id = 'sheet';
+  el.innerHTML = `<div class="sheetbg"></div><div class="sheetbox"><div class="grab"></div>${html}</div>`;
+  document.body.appendChild(el);
+  el.querySelector('.sheetbg').onclick = closeSheet;
+}
+function closeSheet() { const s = document.getElementById('sheet'); if (s) s.remove(); }
+
+// ---------- APP INSTALL (Android + iPhone, bina APK) ----------
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function installApp() {
+  if (installEvt) { installEvt.prompt(); await installEvt.userChoice; installEvt = null; return; }
+  if (isIOS()) {
+    sheet(`<h2>iPhone par HOUZPA install karo</h2>
+      <ol class="steps"><li><b>Safari</b> mein houzpa.vercel.app kholo (Chrome mein nahi)</li>
+      <li>Neeche <b>Share</b> button dabao (dabba jismein upar ki taraf teer hai ⬆️)</li>
+      <li>Scroll karke <b>"Add to Home Screen"</b> dabao</li><li>Upar <b>Add</b> dabao. Ho gaya! 🎉</li></ol>`);
+  } else {
+    sheet(`<h2>Android par HOUZPA install karo</h2>
+      <ol class="steps"><li><b>Chrome</b> mein houzpa.vercel.app kholo</li>
+      <li>Upar daayein <b>⋮</b> dabao</li><li><b>"Install app"</b> ya <b>"Add to Home screen"</b> dabao</li><li><b>Install</b> dabao. Ho gaya! 🎉</li></ol>`);
+  }
+}
+
+// ---------- PARTY DETAIL + PASS LO ----------
+async function viewParty(profile, id) {
+  app.innerHTML = frame('home', profile, `<div class="skel" style="height:260px"></div><div class="skel"></div>`);
+  bindNav(profile);
+  const { data: p, error } = await sb.from('parties')
+    .select('id,name,description,area,city,venue_type,starts_at,ends_at,min_age,alcohol,cover_url,music,food,house_rules,volume_rule,parking_cars,parking_bikes,has_pool,safe_capacity,host_id,host:profiles!parties_host_id_fkey(full_name,is_verified),ticket_tiers(id,name,price_inr,quantity,sold)')
+    .eq('id', id).maybeSingle();
+  const page = app.querySelector('main.page');
+  if (error || !p) { page.innerHTML = `<p class="empty err">${esc(error?.message || 'Party nahi mili.')}</p>`; return; }
+  const c = cover(p), tiers = [...p.ticket_tiers].sort((a, b) => a.price_inr - b.price_inr);
+  const s = { tier: tiers.find(t => t.quantity > t.sold)?.id, qty: 1, ok: false };
+  const end = new Date(p.ends_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  const mine = p.host_id === session.user.id;
+  page.innerHTML = `
+    <button class="backlink" id="bk" type="button">← Parties</button>
+    <div class="hero-cover" style="background:${p.cover_url ? `url('${esc(p.cover_url)}') center/cover` : c.bg}">
+      ${p.cover_url ? '' : `<span class="emo">${c.e}</span>`}${dayBox(p.starts_at)}<div class="shade"></div>
+      <div class="ptitle"><h3 style="font-size:22px">${esc(p.name)}</h3><p>${esc(p.area)}, ${esc(p.city)} · ${esc(p.venue_type)}</p></div>
+    </div>
+    <div class="facts">
+      <div><b>${esc(when(p.starts_at))}</b><span>khatam ${esc(end)}</span></div>
+      <div><b>${p.min_age}+</b><span>age</span></div>
+      <div><b>${p.alcohol === 'No alcohol' ? 'No' : 'Licensed'}</b><span>alcohol</span></div>
+    </div>
+    <div class="card hostrow"><div class="avatar sm">${esc((p.host?.full_name || '?')[0])}</div>
+      <div><b>${esc(p.host?.full_name || 'Host')}</b><p class="small">${p.host?.is_verified ? '✓ Verified host · har guest host-approved' : 'Host'}</p></div></div>
+    ${p.description ? `<p class="desc">${esc(p.description)}</p>` : ''}
+    <div class="card">
+      <div class="kv"><span>🎵 Music</span><b>${esc(p.music.join(', ') || '—')}</b></div>
+      <div class="kv"><span>🔊 Volume</span><b>${esc(p.volume_rule || '—')}</b></div>
+      <div class="kv"><span>🍽 Khana</span><b>${esc(p.food.join(', ') || '—')}</b></div>
+      <div class="kv"><span>🅿️ Parking</span><b>${p.parking_cars} car · ${p.parking_bikes} bike</b></div>
+      <div class="kv"><span>📍 Address</span><b>Pass ke baad milega 🔒</b></div>
+    </div>
+    ${p.house_rules.length ? `<div class="card"><h3>House rules</h3>${p.house_rules.map(r => `<p class="small">• ${esc(r)}</p>`).join('')}</div>` : ''}
+    <div class="card" id="buy"></div>`;
+  document.getElementById('bk').onclick = () => viewHome(profile);
+
+  const drawBuy = () => {
+    const t = tiers.find(x => x.id === s.tier), left = t ? t.quantity - t.sold : 0;
+    const total = t ? t.price_inr * s.qty : 0;
+    document.getElementById('buy').innerHTML = mine ? '<p class="small">Ye aapki party hai. Booking "Meri parties" mein dikhegi.</p>' : `
+      <h3>Pass chuno 🎟️</h3>
+      ${tiers.map(x => { const l = x.quantity - x.sold; return `<button class="tierbtn ${x.id === s.tier ? 'on' : ''}" data-t="${x.id}" type="button" ${l < 1 ? 'disabled' : ''}>
+        <span><b>${esc(x.name)}</b><small>${l < 1 ? 'Sold out' : l <= 10 ? `🔥 sirf ${l} bache` : `${l} available`}</small></span><b class="gold">${x.price_inr ? '₹' + x.price_inr : 'Free'}</b></button>`; }).join('')}
+      ${t ? `<div class="row" style="margin-top:6px"><span>Kitne passes</span><div class="qty"><button type="button" data-q="-1">−</button><b>${s.qty}</b><button type="button" data-q="1">+</button></div></div>
+      <label class="check"><input type="checkbox" id="agree" ${s.ok ? 'checked' : ''}> Maine house rules padh liye. Host entry par ID check kar sakta hai aur kisi ko bhi mana kar sakta hai.</label>
+      <button class="btn gold" id="pay" type="button" ${s.ok ? '' : 'disabled'}>${total ? `₹${total.toLocaleString('en-IN')} pay karo` : 'Free pass lo'}</button>
+      <p class="msg" id="pmsg"></p>
+      ${profile.is_verified ? '' : '<p class="small">⚠️ Pass lene ke liye ID verification zaroori hai.</p>'}` : '<p class="small">Saare passes bik gaye 😢</p>'}`;
+    const box = document.getElementById('buy');
+    box.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { s.tier = b.dataset.t; s.qty = 1; drawBuy(); });
+    box.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { s.qty = Math.max(1, Math.min(6, left, s.qty + +b.dataset.q)); drawBuy(); });
+    const ag = document.getElementById('agree'); if (ag) ag.onchange = () => { s.ok = ag.checked; drawBuy(); };
+    const pay = document.getElementById('pay'); if (pay) pay.onclick = () => checkout(profile, p, s, pay);
+  };
+  drawBuy();
+}
+
+function loadRazorpay() {
+  return new Promise((ok, no) => {
+    if (window.Razorpay) return ok();
+    const sc = document.createElement('script'); sc.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    sc.onload = ok; sc.onerror = () => no(new Error('Razorpay load nahi hua. Internet check karo.'));
+    document.head.appendChild(sc);
+  });
+}
+async function fnError(error, data) {
+  if (data?.error) return data.error;
+  try { const j = await error?.context?.json(); if (j?.error) return j.error; } catch (e) {}
+  return error?.message || 'Kuch gadbad ho gayi.';
+}
+async function checkout(profile, p, s, btn) {
+  const msg = document.getElementById('pmsg');
+  const fail = t => { msg.className = 'msg err'; msg.textContent = t; btn.disabled = false; };
+  btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Order ban raha hai…';
+  const { data, error } = await sb.functions.invoke('create-order', { body: { tier_id: s.tier, qty: s.qty } });
+  if (error || data?.error) return fail(await fnError(error, data));
+  if (data.free) return viewMine(profile, `Pass mil gaya! 🎉 Booking ${data.booking_code}`);
+  try { await loadRazorpay(); } catch (e) { return fail(e.message); }
+  msg.textContent = '';
+  const rz = new window.Razorpay({
+    key: data.key_id, order_id: data.order_id, amount: data.amount, currency: 'INR',
+    name: 'HOUZPA', description: `${data.party_name} · ${data.tier_name} × ${s.qty}`, image: location.origin + '/icon-192.png',
+    prefill: { name: data.name, email: data.email }, theme: { color: '#E5195E' },
+    handler: async r => {
+      msg.className = 'msg'; msg.textContent = 'Payment verify ho raha hai…';
+      const v = await sb.functions.invoke('verify-payment', { body: r });
+      if (v.error || v.data?.error) return fail(await fnError(v.error, v.data));
+      if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
+      viewMine(profile, `Pass confirm! 🎉 Booking ${v.data.booking_code}. Address neeche aapke pass mein hai.`);
+    },
+    modal: { ondismiss: () => fail('Payment cancel ho gaya. Dobara try kar sakte ho.') }
+  });
+  rz.on('payment.failed', r => fail('Payment fail: ' + (r.error?.description || 'dobara try karo')));
+  rz.open();
+}
+
+// ---------- MERE PASSES (QR) ----------
+async function drawPasses(box) {
+  const { data, error } = await sb.from('bookings')
+    .select('id,booking_code,qty,amount_paise,status,checked_in_at,party:parties(id,name,area,city,starts_at,venue_type,party_private(exact_address,entry_instructions,host_phone)),tier:ticket_tiers(name)')
+    .eq('guest_id', session.user.id).eq('status', 'confirmed').order('created_at', { ascending: false });
+  if (error) { box.innerHTML = `<p class="empty err">${esc(error.message)}</p>`; return; }
+  if (!data.length) { box.innerHTML = '<p class="small">Abhi koi pass nahi. Home par party chuno aur pass lo! 🎟️</p>'; return; }
+  box.innerHTML = data.map(b => {
+    const pr = Array.isArray(b.party?.party_private) ? b.party.party_private[0] : b.party?.party_private;
+    return `<article class="pass">
+      <div class="passtop"><div><h3>${esc(b.party?.name)}</h3><p>${esc(when(b.party?.starts_at))}</p></div><span class="badge gold">${b.qty} × ${esc(b.tier?.name)}</span></div>
+      <div class="qr" data-code="${esc(b.booking_code)}"></div>
+      <p class="code">${esc(b.booking_code)}</p>
+      <div class="kv"><span>📍 Address</span><b>${esc(pr?.exact_address || 'Host jald share karega')}${pr ? ', ' + esc(b.party.area) + ', ' + esc(b.party.city) : ''}</b></div>
+      ${pr?.entry_instructions ? `<div class="kv"><span>🚪 Entry</span><b>${esc(pr.entry_instructions)}</b></div>` : ''}
+      ${pr?.host_phone ? `<div class="kv"><span>📞 Host</span><b>${esc(pr.host_phone)}</b></div>` : ''}
+      <div class="kv"><span>💳 Paid</span><b>₹${(b.amount_paise / 100).toLocaleString('en-IN')}</b></div>
+    </article>`;
+  }).join('');
+  try {
+    const QR = (await import('https://esm.sh/qrcode@1.5.4')).default;
+    for (const el of box.querySelectorAll('.qr')) el.innerHTML = `<img alt="QR pass" src="${await QR.toDataURL('HOUZPA:' + el.dataset.code, { margin: 1, width: 220 })}">`;
+  } catch (e) { box.querySelectorAll('.qr').forEach(el => el.remove()); }
+}
+
 // ---------- PROFILE TAB ----------
 function viewMe(profile) {
   const initials = profile.full_name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -649,6 +854,7 @@ function viewMe(profile) {
       </div>
     </section>
     <div class="list">
+      ${isStandalone() ? '' : '<button class="li" id="inst" type="button"><span>📲 HOUZPA app install karo</span><span>›</span></button>'}
       <button class="li" id="snd" type="button"><span>🔊 Party sound sunao</span><span>›</span></button>
       <button class="li" id="mute" type="button"><span>${muted ? '🔇 Intro sound band hai' : '🔈 Intro sound on hai'}</span><span class="small">${muted ? 'On karo' : 'Band karo'}</span></button>
       <a class="li" href="tel:112"><span>🆘 Emergency: 112</span><span>›</span></a>
@@ -658,6 +864,7 @@ function viewMe(profile) {
   bindNav(profile);
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); };
   document.getElementById('snd').onclick = () => window.houzpaPartySound && window.houzpaPartySound();
+  const ib = document.getElementById('inst'); if (ib) ib.onclick = installApp;
   document.getElementById('mute').onclick = () => { window.houzpaSetMuted(!muted); viewMe(profile); };
 }
 
@@ -697,7 +904,7 @@ function viewCreate(profile) {
         <label for="nm">Party ka naam</label><input id="nm" required minlength="3" maxlength="80" placeholder="Jaise: Neon Rooftop Bollywood Night">
         <label for="ds">Description</label><textarea id="ds" maxlength="800" placeholder="Party mein kya khaas hai?"></textarea>
         <div class="grid2">
-          <div><label for="ct">Shehar</label><input id="ct" required value="${esc(profile.city || 'Lucknow')}"></div>
+          <div><label for="ct">Shehar</label><select id="ct" required>${CITIES.map(c => `<option ${c === (profile.city || 'Lucknow') ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
           <div><label for="ar">Area (sabko dikhega)</label><input id="ar" required placeholder="Gomti Nagar"></div>
         </div>
         <div class="grid2">
@@ -861,15 +1068,17 @@ const when = d => new Date(d).toLocaleString('en-IN', { weekday: 'short', day: '
 async function viewMine(profile, note = '') {
   app.innerHTML = frame('mine', profile, `
     ${note ? `<div class="okbox" style="margin-bottom:14px">${esc(note)}</div>` : ''}
-    <h2>Meri parties</h2><div id="list"><p class="empty">Load ho raha hai…</p></div>
+    <h2>🎟️ Mere passes</h2><div id="passes"><div class="skel" style="height:120px"></div></div>
+    <h2 style="margin-top:22px">🏠 Meri hosted parties</h2><div id="list"><p class="empty">Load ho raha hai…</p></div>
   `);
   bindNav(profile);
+  drawPasses(document.getElementById('passes'));
   const { data, error } = await sb.from('parties')
     .select('id,name,area,city,starts_at,status,safe_capacity,ticket_tiers(name,price_inr,quantity,sold)')
     .eq('host_id', session.user.id).order('starts_at', { ascending: false });
   const list = document.getElementById('list');
   if (error) { list.innerHTML = `<p class="empty err">Error: ${esc(error.message)}</p>`; return; }
-  if (!data.length) { list.innerHTML = `<p class="empty">Abhi aapne koi party nahi banayi.${profile.is_verified ? '' : '<br>Party banane ke liye ID verification zaroori hai.'}</p>`; return; }
+  if (!data.length) { list.innerHTML = `<p class="empty">Abhi aapne koi party host nahi ki.${profile.is_verified ? '' : '<br>Party banane ke liye ID verification zaroori hai.'}</p>`; return; }
   list.innerHTML = data.map(p => {
     const sold = p.ticket_tiers.reduce((a, t) => a + t.sold, 0), total = p.ticket_tiers.reduce((a, t) => a + t.quantity, 0);
     return `<article class="party"><div class="body">
@@ -884,9 +1093,24 @@ async function viewMine(profile, note = '') {
 async function viewAdmin(profile) {
   if (!profile.is_admin) return viewHome(profile);
   app.innerHTML = frame('admin', profile, `
+    <h2>Admin · Users verify karo</h2><p class="small">Pehle unka ID (Aadhaar/DL) WhatsApp par dekh lo, phir Verify dabao.</p><div id="users" style="margin:10px 0 20px"><div class="skel" style="height:80px"></div></div>
     <h2>Admin · Approval ke liye parties</h2><p class="msg" id="msg"></p><div id="list"><p class="empty">Load ho raha hai…</p></div>
   `);
   bindNav(profile);
+  (async () => {
+    const ub = document.getElementById('users');
+    const { data: us, error: ue } = await sb.from('profiles').select('id,full_name,city,date_of_birth,created_at').eq('is_verified', false).order('created_at', { ascending: false });
+    if (ue) { ub.innerHTML = `<p class="empty err">${esc(ue.message)}</p>`; return; }
+    if (!us.length) { ub.innerHTML = '<p class="small">Sab users verified hain. ✅</p>'; return; }
+    ub.innerHTML = us.map(x => `<div class="card userrow"><div><b>${esc(x.full_name)}</b><p class="small">${esc(x.city || '')} · ${x.date_of_birth ? ageFrom(x.date_of_birth) + ' saal' : ''}</p></div><button class="btn gold sm" data-v="${x.id}" type="button">Verify ✓</button></div>`).join('');
+    ub.onclick = async e => {
+      const id = e.target.dataset.v; if (!id) return;
+      e.target.disabled = true;
+      const { error } = await sb.from('profiles').update({ is_verified: true }).eq('id', id);
+      if (error) { toast('Error: ' + error.message); e.target.disabled = false; return; }
+      e.target.closest('.userrow').remove(); toast('User verified ✓');
+    };
+  })();
   const { data, error } = await sb.from('parties')
     .select('id,name,description,area,city,venue_type,starts_at,ends_at,min_age,safe_capacity,music,food,house_rules,visibility,host:profiles!parties_host_id_fkey(full_name,is_verified),ticket_tiers(name,price_inr,quantity),party_private(exact_address,host_phone)')
     .eq('status', 'pending_review').order('starts_at');
