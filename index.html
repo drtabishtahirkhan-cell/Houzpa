@@ -270,9 +270,9 @@ main.page{max-width:520px;padding:6px 16px calc(110px + env(safe-area-inset-bott
 .zzmark.sm{width:58px}
 .zzmark .glyph{width:48%;height:100%;background:repeating-linear-gradient(0deg,#f9d98912 0 1px,transparent 1px 3px),linear-gradient(120deg,#a66e39,#ffdf9f 44%,#c78e4b 74%,#ffe1a4);clip-path:polygon(0 0,100% 0,100% 18%,37% 82%,100% 82%,100% 100%,0 100%,0 86%,71% 18%,0 18%)}
 .zzmark .mirror{transform:scaleX(-1)}
-.grab{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-top:10px}
-.grab h1{font:800 30px/1.1 'Unbounded',sans-serif}
-.grab form{width:100%;text-align:left}
+.grabpg{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-top:10px}
+.grabpg h1{font:800 30px/1.1 'Unbounded',sans-serif}
+.grabpg form{width:100%;text-align:left}
 .grabbtn{font:800 20px 'Unbounded',sans-serif;letter-spacing:3px;min-height:58px}
 .locket{position:relative;width:170px;height:170px;border-radius:50%;display:grid;place-items:center;margin-top:30px;
   background:radial-gradient(circle at 35% 30%,#3a1c52,#14091f 70%);box-shadow:0 0 0 6px #c78e4b,0 0 0 8px #ffe1a4,0 18px 50px rgba(0,0,0,.6),0 0 60px rgba(242,196,109,.25);animation:swing 3.2s ease-in-out infinite;transform-origin:50% -60px}
@@ -1239,7 +1239,7 @@ function viewGrab(profile) {
   let pending = ''; try { pending = localStorage.getItem(PENDING) || ''; } catch (e) {}
   const vip = isVip(profile);
   app.innerHTML = frame('me', profile, `
-    <section class="grab">
+    <section class="grabpg">
       <div class="locket">${zzMark()}<i class="chain"></i></div>
       <p class="eyebrow">ZASAZ VIP</p>
       <h1>Locket mila?<br><span class="gold">Code grab karo.</span></h1>
@@ -1271,7 +1271,7 @@ function viewGrab(profile) {
     if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 160]);
     if (window.houzpaPartySound && !(window.houzpaMuted && window.houzpaMuted())) window.houzpaPartySound();
     const until = new Date(profile.vip_until).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    document.querySelector('.grab').innerHTML = `
+    document.querySelector('.grabpg').innerHTML = `
       <div class="locket open">${zzMark()}<i class="chain"></i></div>
       <p class="eyebrow">Welcome to the</p>
       <h1><span class="gold">Secret Room.</span> 🗝️</h1>
